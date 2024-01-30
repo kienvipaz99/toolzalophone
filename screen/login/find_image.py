@@ -36,8 +36,6 @@
 import subprocess
 import cv2
 import numpy as np
-from io import BytesIO
-
 def find_image_coordinates(image_path, device, name_image, threshold=0.99):
     screenshot_bytes = subprocess.check_output(['adb', '-s', device.serial, 'shell', 'screencap', '-p'])
     screenshot_np = cv2.imdecode(np.frombuffer(screenshot_bytes, np.uint8), cv2.IMREAD_COLOR)
