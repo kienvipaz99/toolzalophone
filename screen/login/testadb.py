@@ -113,12 +113,16 @@ def add_friend_numberphone(device, mins, max, maxaction, data, type):
     elif(type=='Kết bạn trong nhóm(trừ trưởng ,phó nhóm)'):
         print('Kết bạn trong nhóm(trừ trưởng ,phó nhóm)')
     #Lướt New feed
-def swip_newfeed(device,min_number,max_number,number_action,type):
+def swip_newfeed(device,min_number,max_number,number_action):
         center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
         actions_performed = 0 
         while actions_performed < number_action:
+            
+            x,y=findElementById(device,'com.zing.zalo:id/feedItemLastSuggest')
+            if(x>0 and y>0):
+                break
             center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
             if(center_x>0 and center_y>0):
                 break
@@ -130,9 +134,9 @@ def swip_newfeed(device,min_number,max_number,number_action,type):
                 sleep(4)
             else:
                 swip(device, 516, 1676, 536, 569)
+        print('oke')
 def post1(device, min_number, max_number, content,file_list):
         for file_path in file_list:
-            # Lấy thời gian hiện tại dưới dạng timestamp
             current_timestamp = time.mktime(datetime.now().timetuple())
 
             # Thay đổi ngày sửa đổi của tệp thành thời gian hiện tại
@@ -146,13 +150,7 @@ def post1(device, min_number, max_number, content,file_list):
 
             # Kích hoạt trình quét media
             subprocess.run(['adb', '-s', device.serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', f'file://{destination_path}'], capture_output=True)
-            
-        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
-        tap(device, center_x, center_y)
-        sleep(random.randint(min_number, max_number))
-        center_x,center_y=findElementById(device,'com.zing.zalo:id/action_bar_new_post_btn')
-        tap(device, center_x, center_y)
-        sleep(random.randint(min_number, max_number))
+        
         center_x,center_y=findElementByName(device,'CHO PHÉP TRUY CẬP')
         if center_x >0 and center_y >0:
             tap(device,center_x,center_y)
@@ -197,21 +195,29 @@ def post(device, min_number, max_number, content, files):
             file_list = files.split()
         else:
             file_list = files
-        post1(device, min_number, max_number, content,file_list)
-        for i in range(len(file_list)):
-            center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
-            if center_x>0 and center_y>0:
-                tap(device,center_x, center_y)
-                swip(device, 985, 1064, 55, 1171)
-                sleep(2)
-            else:
-                kill_and_restart_app('com.zing.zalo')
-                sleep(10)
-                post1(device, min_number, max_number, content,file_list)    
-                break
-        center_x, center_y = find_image_coordinates('assets/images/comfirm_image.png', device, device.serial)
-        tap(device,center_x,center_y)
+        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
+        tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
+        center_x,center_y=findElementById(device,'com.zing.zalo:id/action_bar_new_post_btn')
+        tap(device, center_x, center_y)
+        sleep(random.randint(min_number, max_number))
+        if(len(file_list)>0):
+            post1(device, min_number, max_number, content,file_list)
+            action=0
+            while action < len(file_list):
+                center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
+                if center_x==0 and center_y==0: 
+                    tap(device,450, 450)
+                    sleep(2)
+                if center_x>0 and center_y>0:
+                    tap(device,center_x, center_y)
+                    swip(device, 985, 1064, 55, 1171)
+                    sleep(2)
+                    action+=1
+
+            center_x, center_y = find_image_coordinates('assets/images/comfirm_image.png', device, device.serial)
+            tap(device,center_x,center_y)
+            sleep(random.randint(min_number, max_number))
         center_x,center_y=findElementById(device,'com.zing.zalo:id/etDesc')
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
@@ -222,6 +228,8 @@ def post(device, min_number, max_number, content, files):
         #Đồng ý kết bạn
 def agree_to_make_friends(device,min_number,max_number,number_action,type):
     center_x, center_y = find_image_coordinates('assets/images/danhba.png', device, device.serial)
+    tap(device,center_x, center_y)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
     tap(device,center_x, center_y)
     sleep(random.randint(min_number, max_number))
     center_x,center_y=findElementById(device,'com.zing.zalo:id/tvFriendRequest')
@@ -235,6 +243,8 @@ def agree_to_make_friends(device,min_number,max_number,number_action,type):
                     if x >0 and y>0:
                         tap(device,x, y)
                         sleep(random.randint(min_number, max_number))
+                        center_x,center_y=findElementById(device,'com.zing.zalo:id/btn_accept')
+                        tap(device,center_x,center_y)
                         center_x,center_y=findElementById(device,'com.zing.zalo:id/btnAccept')
                         tap(device,center_x,center_y)
                         action+=1
@@ -252,6 +262,8 @@ def agree_to_make_friends(device,min_number,max_number,number_action,type):
                         sleep(random.randint(min_number, max_number))
                         center_x,center_y=findElementById(device,'com.zing.zalo:id/btnAccept')
                         tap(device,center_x,center_y)
+                        center_x,center_y=findElementById(device,'com.zing.zalo:id/btnAccept')
+                        tap(device,center_x,center_y)
                     else:
                         if(x==0 and y==0):
                             swip(device, 557, 688, 573, 443)
@@ -261,6 +273,7 @@ def agree_to_make_friends(device,min_number,max_number,number_action,type):
 def unfriend(device,min_number,max_number,number_action,type):
     center_x, center_y = find_image_coordinates('assets/images/danhba.png', device, device.serial)
     tap(device,center_x, center_y)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
     sleep(random.randint(min_number, max_number))
     center_x,center_y=findElementById(device,'com.zing.zalo:id/tvFriendRequest')
     tap(device,center_x, center_y)
@@ -319,35 +332,40 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                 else:
                     tap(device, center_x, center_y)
                     sleep(random.randint(min_number, max_number))
+                    center_x, center_y = findElementById(device, 'com.zing.zalo:id/tvSendMes_ob')
+                    tap(device, center_x, center_y)
                     center_x, center_y = findElementById(device, 'com.zing.zalo:id/btn_send_message')
                     tap(device, center_x, center_y)
                     sleep(random.randint(min_number, max_number))
                     
-                    center_x, center_y = findElementById(device, 'com.zing.zalo:id/new_chat_input_btn_show_gallery')
-                    tap(device, center_x, center_y)
-
-                    
-                    post1(device, min_number, max_number, content,file_list)
-                    center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_tv_hd')
-                    tap(device,center_x, center_y)
-                    sleep(2)
-                    for i in range(len(file_list)):
-                        center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_tv_select')
-                        if center_x>0 and center_y>0:
-                            tap(device,center_x, center_y)
-                            sleep(2)
-                            swip(device, 985, 1064, 55, 1171)
-                        else:
-                            kill_and_restart_app('com.zing.zalo')
-                            sleep(10)
-                            post1(device, min_number, max_number, content,file_list)
-                            center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_tv_hd')
-                            tap(device,center_x, center_y)
-                            sleep(2)    
-                            break
-                    center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_layout_send')
-                    tap(device, center_x, center_y)
-                    sleep(random.randint(min_number, max_number))
+                    if(len(file_list)):
+                        center_x, center_y = findElementById(device, 'com.zing.zalo:id/new_chat_input_btn_show_gallery')
+                        tap(device, center_x, center_y)
+                        post1(device, min_number, max_number, content,file_list)
+                        center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_tv_hd')
+                        tap(device,center_x, center_y)
+                        sleep(2)
+                        center_x,center_y=findElementByName(device,'GHI NHỚ')
+                        tap(device,center_x, center_y)
+                        sleep(2)
+                        for i in range(len(file_list)):
+                            center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_tv_select')
+                            if center_x>0 and center_y>0:
+                                tap(device,center_x, center_y)
+                                sleep(2)
+                                swip(device, 985, 1064, 55, 1171)
+                            else:
+                                kill_and_restart_app('com.zing.zalo')
+                                sleep(10)
+                                post1(device, min_number, max_number, content,file_list)
+                                tap(device,center_x, center_y)
+                                sleep(2)    
+                                break
+                        center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_layout_send')
+                        tap(device, center_x, center_y)
+                        sleep(random.randint(min_number, max_number))
+                        
+                        
                     center_x,center_y=findElementById(device,'com.zing.zalo:id/chatinput_text')
                     tap(device, center_x, center_y)
                     sleep(2)
@@ -360,13 +378,18 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                         i+=1
                         back(device)
                         sleep(2)
+                    center_x, center_y = findElementById(device, 'com.zing.zalo:id/clear_btn')
+                    tap(device, center_x, center_y)
+                    sleep(random.randint(min_number, max_number))
             back(device)
             sleep(2)
             back(device)
             sleep(2)
+            
         elif type =='Nhắn tin vào hội nhóm':
             center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
             tap(device, center_x, center_y)
+            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
             sleep(random.randint(min_number, max_number))
             center_x, center_y = find_image_coordinates('assets/images/select_group.png', device, device.serial)
             tap(device, center_x, center_y)
@@ -378,21 +401,20 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     swip(device, 363, 1400, 360, 1150)
                     tap(device,center_x, center_y)
                     sleep(random.randint(min_number, max_number))
-                    post2(device, min_number, max_number, content,file_list)
-                    for i in range(len(file_list)):
-                        center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
-                        if center_x>0 and center_y>0:
-                            tap(device,center_x, center_y)
-                            swip(device, 985, 1064, 55, 1171)
-                            sleep(2)
-                        else:
-                            kill_and_restart_app('com.zing.zalo')
-                            sleep(10)
-                            post1(device, min_number, max_number, content,file_list)    
-                            break
-                    center_x, center_y = find_image_coordinates('assets/images/sent_image.png', device, device.serial)
-                    tap(device,center_x, center_y)
-                    sleep(random.randint(min_number, max_number))
+                    if len(file_list)>0:
+                        post2(device, min_number, max_number, content,file_list)
+                        for i in range(len(file_list)):
+                            center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
+                            if(center_x==0 and center_y==0):
+                                tap(device,450, 450)
+                                sleep(2)
+                            if center_x>0 and center_y>0:
+                                tap(device,center_x, center_y)
+                                swip(device, 985, 1064, 55, 1171)
+                                sleep(2)
+                        center_x, center_y = find_image_coordinates('assets/images/sent_image.png', device, device.serial)
+                        tap(device,center_x, center_y)
+                        sleep(random.randint(min_number, max_number))
                     center_x, center_y = find_image_coordinates('assets/images/meesage.png', device, device.serial)
                     tap(device,center_x, center_y)
                     input_text(device,text=content)
@@ -401,15 +423,39 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     tap(device,center_x, center_y)
                     sleep(random.randint(min_number, max_number))
                     back(device)
-
-
-                
+                    i+=1
+def comment_post(device,min_number,max_number,number_action,content):
+    center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
+    tap(device, center_x, center_y)
+    sleep(random.randint(min_number, max_number))
+    i=0
+    while i < number_action:
+        center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
+        if(center_x>0 and center_y>0):
+            break
+        x,y=findElementById(device,'com.zing.zalo:id/feedItemLastSuggest')
+        if(x>0 and y>0):
+                break
+        center_x,center_y=findElementById(device,'com.zing.zalo:id/comment_input_bar')
+        x,y=findElementById(device,'com.zing.zalo:id/btn_comment')
+        
+        if (center_x > 0 and center_y > 0) or(x>0 and y>0) :
+            tap(device, center_x, center_y)
+            sleep(random.randint(min_number, max_number))
+            center_x,center_y=findElementById(device,'com.zing.zalo:id/comment_input_bar')
+            tap(device, center_x, center_y)
+            input_text(device,text=content)
+            sleep(random.randint(min_number, max_number))
+            center_x,center_y=findElementById(device,'com.zing.zalo:id/cmtinput_send')
+            tap(device, center_x, center_y)
             
-            
- 
-                
-                
-
+            sleep(random.randint(min_number, max_number))
+            back(device)
+            sleep(2)
+            swip(device, 690, 1722, 536, 410)
+            i+=1
+        else:
+            swip(device, 516, 1676, 536, 410)
 def login(device,account_info):
     delete_cache(device,"com.zing.zalo")
     sleep(random.randint(5,10))

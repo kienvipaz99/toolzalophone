@@ -8,8 +8,9 @@ from tkinter import filedialog
 from tkinter import messagebox
 import tkinter.messagebox
 import threading,time,subprocess
+from  killapp import kill_and_restart_app
 from time import sleep
-from testadb import get_devices,login,add_friend_numberphone,swip_newfeed,post,check_key_board,agree_to_make_friends,unfriend,sent_messages
+from testadb import get_devices,login,add_friend_numberphone,swip_newfeed,post,check_key_board,agree_to_make_friends,unfriend,sent_messages,comment_post
 def get_device_imei(device):
     result = device.shell("service call iphonesubinfo 1 s16 com.android.shell  | cut -d \"'\" -f2 | grep -Eo '[0-9]' | xargs | sed 's/ //g'")
     imei = result.strip()
@@ -57,8 +58,6 @@ cursor.execute('''
         file_path TEXT,
         datalist_phone TEXT,
         divided BOOLEAN,
-        datalist_mess TEXT,
-        
         FOREIGN KEY (timeline_id) REFERENCES timeline (id)
     )
 ''')
@@ -74,6 +73,12 @@ class DashboardScreen(CTk):
         self.stop_flag = False
         self.selected_value = StringVar()
         self.checkLogin=IntVar()
+        self.checkDivided=IntVar()
+        self.checkDivided1=IntVar()
+        self.checkDivided2=IntVar()
+        
+        
+        
     def perform_action(self,device,action_name,item):
         min_number=item[3]
         max_number=item[4]
@@ -84,12 +89,8 @@ class DashboardScreen(CTk):
         file=item[9]
         if action_name == 'Thêm bạn bè':
             add_friend_numberphone(device,min_number,max_number,number_action,data_number,type)
-            
-        elif action_name == 'nhắn tin':
-            # Gọi hành động nhắn tin ở đây
-            print('Thực hiện hành động: Nhắn tin')
         elif action_name == 'Lướt new feed':
-            swip_newfeed(device,min_number,max_number,number_action,type)
+            swip_newfeed(device,min_number,max_number,number_action)
         elif action_name=='Đăng bài':
             post(device,min_number,max_number,content,file)
         elif action_name=='Đồng ý kết bạn':
@@ -98,17 +99,21 @@ class DashboardScreen(CTk):
             unfriend(device,min_number,max_number,number_action,type)
         elif action_name=='Nhắn tin':
             sent_messages(device,min_number,max_number,content,number_action,file,type,data_number)
+        elif action_name=='Bình luận bài viết':
+            comment_post(device,min_number,max_number,number_action,content)
         else:
             print(f'Hành động không xác định: {action_name}')
 
     def process_device(self,device,account_info,data):
-        # if not check_key_board(device.serial, "com.android.adbkeyboard"):
-        #     subprocess.call(['adb', '-s', device.serial, 'install', 'screen/login/ADBKeyboard.apk'])
-        #     sleep(10)
-        # ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
-        # os.system(ime_command)
+        if not check_key_board(device.serial, "com.android.adbkeyboard"):
+            subprocess.call(['adb', '-s', device.serial, 'install', 'screen/login/ADBKeyboard.apk'])
+            sleep(10)
+        ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
+        os.system(ime_command)
         if(self.checkLogin.get()==1):
             login(device,account_info)
+        else:
+            kill_and_restart_app('com.zing.zalo')
         time.sleep(3)
         for item in data:
             action_name = item[2]
@@ -338,6 +343,23 @@ class DashboardScreen(CTk):
                     cursor.execute("UPDATE timeline SET name = ? WHERE id = ?", (new_name, row[0]))
                     conn.commit()
                     load_data1()
+ 
+            def edit_action(row):
+                name_table=row[2]
+                if(name_table=='Thêm bạn bè'):
+                    add_friend_window(row)
+                elif(name_table=='Lướt new feed'):
+                    new_feed_window(row)
+                elif(name_table=='Đăng bài'):
+                    upload_post_window(row)
+                elif(name_table=='Đồng ý kết bạn'):
+                    agree_add_friend(row)
+                elif(name_table=='Thu hồi kết bạn'):
+                    un_friend(row)
+                elif(name_table=='Nhắn tin'):
+                    sent_message_window(row)        
+                elif name_table=='Bình luận bài viết':
+                    open_window_comment(row)
             def clear_table_frame(keep_header=True):
                 start_index = 3 if keep_header else 0
                 for widget in table_frame.winfo_children()[start_index:]:
@@ -378,7 +400,7 @@ class DashboardScreen(CTk):
                         stt = row_index
                         CTkLabel(my_frame,text=stt,width=150).grid(row=row_index, column=0,sticky="nsew",padx=5,pady=5)
                         CTkLabel(my_frame,text=row_data[2],width=150).grid(row=row_index, column=1,sticky="nsew",padx=5,pady=5)
-                        CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_timeline(row),width=130,image=img_pen).grid(row=row_index, column=2, sticky="nsew",pady=5,padx=5)
+                        CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_action(row),width=130,image=img_pen).grid(row=row_index, column=2, sticky="nsew",pady=5,padx=5)
                         CTkButton(my_frame ,image=img_bin,text='Xoá',width=130, command=lambda id=row_data[0]: delete_action(id)).grid(row=row_index, column=3, sticky="nsew",pady=5,padx=5)
                         separator = ttk.Separator(my_frame, orient='horizontal')
                         separator.grid(row=row_index, column=0, columnspan=len(table_action), sticky='ew', pady=(0, 40))
@@ -429,7 +451,7 @@ class DashboardScreen(CTk):
                 label = CTkLabel(my_frame, text=column,width=150)
                 label.grid(row=0, column=i, sticky='w', pady=5,padx=5)
             calldata()
-            def open_window_comment():
+            def open_window_comment(data=None):
                     global window_comment
                     def toggle_window():
                         if window_comment.state() == "normal":
@@ -464,16 +486,26 @@ class DashboardScreen(CTk):
                     input_max.pack(side='top', anchor='w')
                     frame = CTkFrame(window_comment, fg_color='transparent')
                     frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
-                    text_3 = CTkLabel(frame, text='Số lượng tin nhắn gửi đi', text_color='black', font=font_text)
+                    text_3 = CTkLabel(frame, text='Số lượng hành động', text_color='black', font=font_text)
                     text_3.pack(side='top', anchor='w')
-                    input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng tin nhắn gửi đi', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                    input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng hành động', text_color='black', font=font_text, width=window_width*0.9, height=40)
                     input_max_message.pack(fill='x', side='top')
-                    text_4 = CTkLabel(frame, text='Nội dung(ngăn cách các loại tin bằng khoảng cách 3 dòng)', text_color='black', font=font_text)
+                    text_4 = CTkLabel(frame, text='Nội dung', text_color='black', font=font_text)
                     text_4.pack(side='top', anchor='w')
                     input_content =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                     input_content.pack(side='top', anchor='w')
                     CTkScrollbar(frame,command=input_content.yview)
                     input_content.pack(side='top', anchor='w')
+                    if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            maxnumber=data[5]
+                            content=data[7]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            input_max_message.insert(0,maxnumber)
+                            input_content.insert("0.0",content)
+                            
                     def save_comment():
                         try:
                                 id=self.selected_value.get()    
@@ -481,10 +513,20 @@ class DashboardScreen(CTk):
                                 delaymax=input_max.get()
                                 quantity=input_max_message.get()
                                 data_list = input_content.get("1.0", "end-1c")
-                                cursor.execute('''
-                                INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content)
-                                VALUES (?, 'Bình luận bài viết', ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax, quantity, data_list))
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?,
+                                                        quantity =? ,  
+                                                        content = ?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax,quantity,content,id_item))
+                                else:
+                                    cursor.execute('''
+                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content)
+                                    VALUES (?, 'Bình luận bài viết', ?, ?, ?, ?)
+                                    ''', (id, delaymin, delaymax, quantity, data_list))
                                 conn.commit()
                                 calldata()
                                 on_close()
@@ -492,7 +534,7 @@ class DashboardScreen(CTk):
                                 print("Lỗi khi thêm dữ liệu bạn bè:", e)
                     CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_comment).pack(side='top',anchor='n',pady=(20,20))
                     window_comment.protocol("WM_DELETE_WINDOW", on_close)
-            def add_friend_window():
+            def add_friend_window(data=None):
                         global add_friend
                         def toggle_window():
                             if add_friend.state() == "normal":
@@ -542,7 +584,7 @@ class DashboardScreen(CTk):
                                            variable=selected_item_auto,command=lambda:check()).pack(side='left', anchor='w')
                         label_input_phone=CTkLabel(frame,text_color='black',font=font_text,text='Danh sách số điện thoại (mỗi số 1 dòng)')
                         input_phone =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
-                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black')
+                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided1)
                         def check():
                             if(selected_item_auto.get()=='Kết bạn theo sđt'):
                                 label_input_phone.pack(side='top',anchor='w',pady=5)
@@ -553,6 +595,19 @@ class DashboardScreen(CTk):
                                 label_input_phone.pack_forget()
                                 check_number.pack_forget()
                         check()
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            type=data[6]
+                            maxnumber=data[5]
+                            data_phone=data[10]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            divided=data[11]
+                            selected_item_auto.set(type)
+                            input_max_friend.insert(0,maxnumber)
+                            input_phone.insert("0.0", data_phone)
+                            self.checkDivided1.set(divided)
                         def add_data():
                             try:
                                 id=self.selected_value.get()    
@@ -561,11 +616,19 @@ class DashboardScreen(CTk):
                                 numbermax=input_max_friend.get()
                                 type=selected_item_auto.get()
                                 data_list = input_phone.get("1.0", "end-1c")
-                                
-                                cursor.execute('''
-                                INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, type, datalist_phone, divided)
-                                VALUES (?, 'Thêm bạn bè', ?, ?, ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax, numbermax,type, data_list, True))
+                                check=self.checkDivided1.get()
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?, type = ?, quantity = ?,datalist_phone = ?,divided=?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax, type, numbermax,data_list,check, id_item))
+                                else:
+                                    cursor.execute('''
+                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, type, datalist_phone, divided)
+                                    VALUES (?, 'Thêm bạn bè', ?, ?, ?, ?, ?, ?)
+                                    ''', (id, delaymin, delaymax, numbermax,type, data_list, self.checkDivided1.get()))
                                 conn.commit()
                                 calldata()
                                 on_close()
@@ -575,7 +638,7 @@ class DashboardScreen(CTk):
                         CTkScrollbar(frame,command=input_phone.yview)
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5,command=add_data).pack(side='bottom',anchor='n',pady=(20,0))
                         add_friend.protocol("WM_DELETE_WINDOW", on_close)
-            def sent_message_window():
+            def sent_message_window(data=None):
                         global sent_message
                         def toggle_window():
                             if sent_message.state() == "normal":
@@ -630,8 +693,10 @@ class DashboardScreen(CTk):
                         item_auto=['Nhắn tin theo số điện thoại','Nhắn tin vào hội nhóm','Nhắn tin bạn bè']
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5)
+                        text_6 = CTkLabel(frame, text='Danh sách số điện thoại(mỗi số 1 dòng)', text_color='black', font=font_text)
                         input_phone =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
+                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided2)
                         def open_file_dialog(label):
                             file_paths = filedialog.askopenfilenames(title="Chọn tệp", filetypes=[("Ảnh", ("*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"))])
     
@@ -646,16 +711,38 @@ class DashboardScreen(CTk):
                             if valid_image_paths:
                                 label.configure(text="\n".join(valid_image_paths))
                             else:
-                                # Thông báo hoặc xử lý khi không có ảnh nào hợp lệ được chọn
+                                messagebox.showwarning("Thông báo",'Ảnh không hợp lệ')
                                 pass
                         def toggle_input_max():
                             if selected_item_auto.get() == 'Nhắn tin theo số điện thoại':
+                                    text_6.pack(side='top', anchor='w')
                                     input_phone.pack(side='top', anchor='w',pady=5)
+                                    check_number.pack(side='top', anchor='w',pady=5)
                             else:
+                                text_6.pack_forget()
                                 input_phone.pack_forget()
+                                check_number.pack_forget()
                         for item in item_auto:
                             tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item,variable=selected_item_auto,command=toggle_input_max).pack(side='left', anchor='w')  
                         toggle_input_max()
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            content=data[7]
+                            file_path=data[9]
+                            types=data[6]
+                            maxnumber=data[5]
+                            datalist_phone=data[10]
+                            divided=data[11]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            input_max_message.insert(0,maxnumber)
+                            input_content.insert("0.0",content)
+                            label_file_path.configure(text=file_path)
+                            input_phone.insert("0.0",datalist_phone)
+                            selected_item_auto.set(value=types)
+                            self.checkDivided2.set(divided)
+                            
                         def save_sent_message():
                             try:
                                 id=self.selected_value.get()    
@@ -664,12 +751,23 @@ class DashboardScreen(CTk):
                                 quantity=input_max_message.get()
                                 content=input_content.get("1.0", "end-1c")
                                 auto=selected_item_auto.get()
-                                datalist_mess=input_phone.get("1.0", "end-1c")
+                                datalist_phone=input_phone.get("1.0", "end-1c")
                                 file_path = label_file_path.cget("text")
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content, type, datalist_phone,file_path)
-                                    VALUES (?, 'Nhắn tin', ?, ?, ?, ?, ?, ?,?)
-                                ''', (id, delaymin, delaymax, quantity, content, auto, datalist_mess,file_path))
+                                self.checkDivided2.get()
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?,
+                                                        quantity =? ,  
+                                                        content = ?,file_path=?, type=?,datalist_phone= ? , divided= ?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax,quantity,content,file_path,auto,datalist_phone,self.checkDivided2.get(), id_item))
+                                else:
+                                                                    cursor.execute('''
+                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content, type, datalist_phone,file_path,divided)
+                                    VALUES (?, 'Nhắn tin', ?, ?, ?, ?, ?, ?,?,?)
+                                    ''', (id, delaymin, delaymax, quantity, content, auto, datalist_phone,file_path,self.checkDivided2.get()))
                                 conn.commit()
                                 calldata()
                             except Exception as e:
@@ -678,7 +776,7 @@ class DashboardScreen(CTk):
                                 
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_sent_message).pack(side='bottom',anchor='n',pady=(20,0))
                         sent_message.protocol("WM_DELETE_WINDOW", on_close)
-            def upload_post_window():
+            def upload_post_window(data=None):
                         global post_window
                         def toggle_window():
                             if post_window.state() == "normal":
@@ -733,6 +831,15 @@ class DashboardScreen(CTk):
                         label_file_path = CTkLabel(frame, text="", justify="left")
                         label_file_path.pack(side='top', anchor='w')
                         CTkButton(frame, text='Tải lên file đính kèm', command=lambda: open_file_dialog(label_file_path), text_color='white', font=font_text).pack(side='top', anchor='w', pady=(10, 0))
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            content=data[7]
+                            file_path=data[9]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            input_content.insert("0.0",content)
+                            label_file_path.configure(text=file_path)
                         def save_post_window():
                             try:
                                 id=self.selected_value.get()    
@@ -740,9 +847,19 @@ class DashboardScreen(CTk):
                                 delaymax=input_max.get()
                                 content=input_content.get("1.0", "end-1c")
                                 file_path = label_file_path.cget("text")
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, content,file_path)
-                                    VALUES (?, 'Đăng bài', ?, ?, ?, ?)
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?, =
+                                                        content = ?,file_path=?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax, content,file_path, id_item))
+                                else:
+                                    
+                                    cursor.execute('''
+                                        INSERT INTO action (timeline_id, name_action, time_min, time_max, content,file_path)
+                                        VALUES (?, 'Đăng bài', ?, ?, ?, ?)
                                 ''', (id, delaymin, delaymax, content,file_path))
                                 conn.commit()
                                 calldata()
@@ -770,7 +887,7 @@ class DashboardScreen(CTk):
 
                         post_window.protocol("WM_DELETE_WINDOW", on_close)
 
-            def new_feed_window():
+            def new_feed_window(data=None):
                         global new_feed
                         def toggle_window():
                             if new_feed.state() == "normal":
@@ -786,14 +903,12 @@ class DashboardScreen(CTk):
                             new_feed = None
 
                         window_width = 500
-                        window_height = 340
+
                         new_feed = CTkToplevel(self.main_view_frame)
                         new_feed.title("Lướt new feed")
                         new_feed.resizable(False,False)
                         new_feed.deiconify()
-                        position_x = int((self.frame_width - window_width) / 2)
-                        position_y = int((self.frame_height - window_height) / 2)
-                        new_feed.geometry(f"{window_width}x{window_height}+{position_x}+{position_y}")
+
                         container_frame_max_min = CTkFrame(new_feed, fg_color='transparent')
                         container_frame_max_min.pack(fill='x', padx=10, pady=5, anchor='ne', side='top') 
                         input_frame_max = CTkFrame(container_frame_max_min, fg_color='transparent')   
@@ -814,35 +929,44 @@ class DashboardScreen(CTk):
                         text_3.pack(side='top', anchor='w')
                         input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng bài viết tương tác', text_color='black', font=font_text, width=window_width*0.9, height=40)
                         input_max_message.pack(fill='x', side='top')
-                        text_4 = CTkLabel(frame, text='Loại', text_color='black', font=font_text)
-                        text_4.pack(side='top', anchor='w')
-                        
-                        type=['Tim lần lượt','Tim random']
-                        selected_item_auto = StringVar(value='Tim lần lượt')
-                        frame_checkbox=CTkFrame(frame)
-                        frame_checkbox.pack(side='top', anchor='w',pady=5)
-                        for item in type:
-                            tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 14),value=item,variable=selected_item_auto).pack(side='left', anchor='w')
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            maxnumber=data[5]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            input_max_message.insert(0,maxnumber)
+
                         def save_new_feed():
                             try:
                                 id=self.selected_value.get()    
                                 delaymin=input_min.get()
                                 delaymax=input_max.get()
                                 quantity=input_max_message.get()
-                                auto=selected_item_auto.get()
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity,type)
-                                    VALUES (?, 'Lướt new feed', ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax, quantity,auto))
+                                
+                                if data is not None:
+                                    id_item=data[0]
+                                    
+                                    
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?,  quantity = ?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax,  quantity, id_item))
+                                else:
+                                    cursor.execute('''
+                                        INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity)
+                                        VALUES (?, 'Lướt new feed', ?, ?, ?)
+                                    ''', (id, delaymin, delaymax, quantity,))
                                 conn.commit()
                                 calldata()
                             except Exception as e:
                                 print("Đã xảy ra lỗi:", e)
                             on_close()
 
-                        CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_new_feed).pack(side='top', anchor='n',pady=(20,0))
+                        CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_new_feed).pack(side='top', anchor='n',pady=(20,20))
                         new_feed.protocol("WM_DELETE_WINDOW", on_close)
-            def agree_add_friend():
+            def agree_add_friend(data=None):
                         global agree_window
                         def toggle_window():
                             if agree_window.state() == "normal":
@@ -896,6 +1020,15 @@ class DashboardScreen(CTk):
                         for item in item_auto:
                             tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=toggle_input_max).pack(side='left', anchor='w')
                         input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt đồng ý', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            type=data[6]
+                            maxnumber=data[5]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            selected_item_auto.set(type)
+                            input_max_message.insert(0,maxnumber)
                         def save_agree_window():
                             try:
                                 id=self.selected_value.get()    
@@ -903,10 +1036,21 @@ class DashboardScreen(CTk):
                                 delaymax=input_max.get()
                                 type=selected_item_auto.get()
                                 quantity=input_max_message.get()
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity)
-                                    VALUES (?, 'Đồng ý kết bạn', ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax, type,quantity))
+                                if data is not None:
+                                    id_item=data[0]
+                                    
+                                    
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?, type = ?, quantity = ?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax, selected_item_auto.get(), quantity, id_item))
+                                else:
+                                    
+                                    cursor.execute('''
+                                        INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity)
+                                        VALUES (?, 'Đồng ý kết bạn', ?, ?, ?, ?)
+                                    ''', (id, delaymin, delaymax, type,quantity))
                                 conn.commit()
                                 calldata()
                             except Exception as e:
@@ -914,7 +1058,7 @@ class DashboardScreen(CTk):
                             on_close()
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_agree_window).pack(side='bottom',anchor='n',pady=(20,0))
                         agree_window.protocol("WM_DELETE_WINDOW", on_close)
-            def un_friend():
+            def un_friend(data=None):
                         global unfriend_window
                         def toggle_window():
                             if unfriend_window.state() == "normal":
@@ -930,6 +1074,7 @@ class DashboardScreen(CTk):
                             unfriend_window = None
                         window_width = 500
                         window_height = 300
+                     
                         unfriend_window = CTkToplevel(self.main_view_frame)
                         unfriend_window.title("Thu hồi kết bạn")
                         unfriend_window.resizable(False,False)
@@ -975,7 +1120,16 @@ class DashboardScreen(CTk):
                                 delaymax=input_max.get()
                                 type=selected_item_auto.get()
                                 quantity=input_max_message.get()
-                                cursor.execute('''
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                                        UPDATE action
+                                                        SET time_min = ?, time_max = ?, type = ?, quantity = ?
+                                                        WHERE id = ?
+                                                    ''', (delaymin, delaymax, type, quantity, id_item))
+                                        
+                                else:
+                                    cursor.execute('''
                                     INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity)
                                     VALUES (?, 'Thu hồi kết bạn', ?, ?, ?, ?)
                                 ''', (id, delaymin, delaymax, type,quantity))
@@ -984,6 +1138,17 @@ class DashboardScreen(CTk):
                             except Exception as e:
                                 print("Đã xảy ra lỗi:", e)
                             on_close()
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            type=data[6]
+                            maxnumber=data[5]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            selected_item_auto.set(type)
+                            input_max_message.insert(0,maxnumber)
+
+
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_unfriend_window).pack(side='bottom',anchor='n',pady=(20,0))
                         unfriend_window.protocol("WM_DELETE_WINDOW", on_close)   
             def invite_group_window():
