@@ -58,6 +58,7 @@ cursor.execute('''
         file_path TEXT,
         datalist_phone TEXT,
         divided BOOLEAN,
+        love BOOLEAN,
         FOREIGN KEY (timeline_id) REFERENCES timeline (id)
     )
 ''')
@@ -76,10 +77,12 @@ class DashboardScreen(CTk):
         self.checkDivided=IntVar()
         self.checkDivided1=IntVar()
         self.checkDivided2=IntVar()
+        self.love=IntVar()
         
         
         
     def perform_action(self,device,action_name,item):
+        id=item[0]
         min_number=item[3]
         max_number=item[4]
         number_action=item[5]
@@ -87,6 +90,7 @@ class DashboardScreen(CTk):
         type=item[6]
         content=item[7]
         file=item[9]
+        love=item[12]
         if action_name == 'Thêm bạn bè':
             add_friend_numberphone(device,min_number,max_number,number_action,data_number,type)
         elif action_name == 'Lướt new feed':
@@ -98,9 +102,9 @@ class DashboardScreen(CTk):
         elif action_name=='Thu hồi kết bạn':
             unfriend(device,min_number,max_number,number_action,type)
         elif action_name=='Nhắn tin':
-            sent_messages(device,min_number,max_number,content,number_action,file,type,data_number)
+            sent_messages(device,min_number,max_number,content,number_action,file,type,data_number,id)
         elif action_name=='Bình luận bài viết':
-            comment_post(device,min_number,max_number,number_action,content)
+            comment_post(device,min_number,max_number,number_action,content,love)
         else:
             print(f'Hành động không xác định: {action_name}')
 
@@ -402,6 +406,7 @@ class DashboardScreen(CTk):
                         CTkLabel(my_frame,text=row_data[2],width=150).grid(row=row_index, column=1,sticky="nsew",padx=5,pady=5)
                         CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_action(row),width=130,image=img_pen).grid(row=row_index, column=2, sticky="nsew",pady=5,padx=5)
                         CTkButton(my_frame ,image=img_bin,text='Xoá',width=130, command=lambda id=row_data[0]: delete_action(id)).grid(row=row_index, column=3, sticky="nsew",pady=5,padx=5)
+
                         separator = ttk.Separator(my_frame, orient='horizontal')
                         separator.grid(row=row_index, column=0, columnspan=len(table_action), sticky='ew', pady=(0, 40))
                         if hasattr(my_frame, "no_action_label"):
@@ -411,6 +416,7 @@ class DashboardScreen(CTk):
 
                         start_button = CTkButton(farme2, text='Bắt đầu', height=40, command=self.start_action)
                         start_button.pack(side='bottom', anchor='w', padx=10)
+
                         if hasattr(farme2, "checkbox"):
                             if farme2.checkbox.winfo_exists():
                                 farme2.checkbox.destroy()
@@ -438,7 +444,7 @@ class DashboardScreen(CTk):
                     calldata()
             farme2 = CTkFrame(self.main_view_frame,fg_color='white')
             farme2.pack(side='right', padx=20, pady=10,anchor='ne')
-            header2=CTkFrame(farme2,height=100,fg_color='#182240',)
+            header2=CTkFrame(farme2,height=100,fg_color='#182240')
             header2.pack(pady=20, padx=30,side='top', fill='x')
             title2=CTkLabel(header2, text='Chi tiết hành động',text_color='white')
             title2.pack(side='left',padx=20,pady=10)
@@ -489,7 +495,10 @@ class DashboardScreen(CTk):
                     text_3 = CTkLabel(frame, text='Số lượng hành động', text_color='black', font=font_text)
                     text_3.pack(side='top', anchor='w')
                     input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng hành động', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                    
                     input_max_message.pack(fill='x', side='top')
+                    love_post=CTkCheckBox(frame,text='Tim bài viết',variable=self.love)
+                    love_post.pack(fill='x', side='top', pady=(10,5))
                     text_4 = CTkLabel(frame, text='Nội dung', text_color='black', font=font_text)
                     text_4.pack(side='top', anchor='w')
                     input_content =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
@@ -501,10 +510,12 @@ class DashboardScreen(CTk):
                             max=data[4]
                             maxnumber=data[5]
                             content=data[7]
+                            love=data[12]
                             input_min.insert(0,min)
                             input_max.insert(0,max)
                             input_max_message.insert(0,maxnumber)
                             input_content.insert("0.0",content)
+                            self.love.set(value=love)
                             
                     def save_comment():
                         try:
@@ -519,14 +530,15 @@ class DashboardScreen(CTk):
                                                         UPDATE action
                                                         SET time_min = ?, time_max = ?,
                                                         quantity =? ,  
-                                                        content = ?
+                                                        content = ?,
+                                                        love = ?
                                                         WHERE id = ?
-                                                    ''', (delaymin, delaymax,quantity,content,id_item))
+                                                    ''', (delaymin, delaymax,quantity,content,self.love.get(),id_item))
                                 else:
                                     cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content)
-                                    VALUES (?, 'Bình luận bài viết', ?, ?, ?, ?)
-                                    ''', (id, delaymin, delaymax, quantity, data_list))
+                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity,love, content)
+                                    VALUES (?, 'Bình luận bài viết', ?, ?, ?, ?, ?)
+                                    ''', (id, delaymin, delaymax, quantity,self.love.get(), data_list))
                                 conn.commit()
                                 calldata()
                                 on_close()

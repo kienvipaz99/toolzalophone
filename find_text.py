@@ -7,6 +7,7 @@ from readingfile import check_xml_data
 from lxml import etree
 def dumpXml(serial: str):
     srdev = serial
+
     serial_hash = hashlib.md5(serial.encode('utf-8-sig')).hexdigest()
     serial_dir = os.path.join(os.getcwd(), serial_hash)
     
@@ -73,3 +74,54 @@ def get_coordinates_capcha(serial, attrib, name):
 
 
 
+def get_coordinates_capcha(serial, attrib, name):
+    dumpXml(serial)
+    pattern = re.compile(r"\d+")
+    try:
+        tree = ET.ElementTree(file=os.path.join(os.getcwd(), hashlib.md5(serial.encode('utf-8-sig')).hexdigest(), "ui.xml"))
+        for elem in tree.iter(tag="node"):
+            if elem.attrib.get(attrib)== name:
+                bounds = elem.attrib["bounds"]
+                coord = pattern.findall(bounds)
+                return coord[0],coord[1],coord[2],coord[3]
+            
+    except ET.ParseError:
+        
+        print("Lỗi phân tích XML hoặc không tìm thấy tệp.")
+        return None  
+    except Exception as e:
+        # Xử lý các ngoại lệ khác
+        print(f"Lỗi: {e}")
+        return None 
+def find_coordinates_friend(serial, id_value):
+    dumpXml(serial)
+    pattern = re.compile(r"\d+")
+    filename = "captured_texts.txt"
+    filepath = os.path.join(os.getcwd(), filename)
+
+   
+    xml_path = os.path.join(os.getcwd(), hashlib.md5(serial.encode('utf-8-sig')).hexdigest(), "ui.xml")
+    tree = ET.ElementTree(file=xml_path)
+
+    if not os.path.exists(filepath):
+        open(filepath, "a").close()
+
+    existing_entries = []
+    with open(filepath, "r") as file:
+        existing_entries = file.read().splitlines()
+
+    for elem in tree.iter(tag="node"):
+        if elem.attrib.get('resource-id') == id_value:
+                text_value = elem.attrib.get("text", "").strip()
+                bounds = elem.attrib["bounds"]
+                coord = pattern.findall(bounds)
+                Xpoint = int((int(coord[2]) + int(coord[0])) / 2)
+                Ypoint = int((int(coord[3]) + int(coord[1])) / 2)
+                entry = f"{text_value}"
+                
+                if entry not in existing_entries:
+                    with open(filepath, "a") as file:
+                        file.write(entry + "\n")
+                        return Xpoint, Ypoint
+
+    return 0, 0  

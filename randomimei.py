@@ -16,10 +16,8 @@ def get_device_imei(device):
     imei = result.strip()
     return imei
 def is_fastboot_mode(device):
-    # Kiểm tra trạng thái hiện tại của thiết bị
     current_state = device.get_state()
     print(current_state,'123')
-    # Chuyển trạng thái về chuỗi và kiểm tra xem có phải là "fastboot" không
     return current_state == "device" or current_state == "fastboot"
 
 def main():
