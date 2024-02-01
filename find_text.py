@@ -4,7 +4,6 @@ import os
 import subprocess
 import hashlib
 from readingfile import check_xml_data
-from lxml import etree
 def dumpXml(serial: str):
     srdev = serial
 

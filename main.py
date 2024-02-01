@@ -221,15 +221,15 @@ class DashboardScreen(CTk):
         if loai_man_hinh == "Tài khoản":
             fame1 = CTkFrame(self.main_view_frame,fg_color='white')
             fame1.pack(side='left', anchor='nw', padx=10,pady=20)  
-            label = CTkLabel(fame1, text="Thêm tài khoản", font=("Arial", 20), fg_color="white", anchor='w')
+            label = CTkLabel(fame1,text_color='black', text="Thêm tài khoản", font=("Arial", 20), fg_color="white", anchor='w')
             label.pack(padx=10)
-            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10, font=("Adobe Kaiti Std R", 14), height=40, width=150)
+            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10,fg_color="white", font=("Adobe Kaiti Std R", 14), height=40, width=150)
             input_taikhoan.pack(pady=10, padx=10)
-            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', corner_radius=10, font=("Adobe Kaiti Std R", 14), height=40, width=150)
+            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', fg_color="white",corner_radius=10, font=("Adobe Kaiti Std R", 14), height=40, width=150)
             input_mk.pack(pady=10, padx=10)
             info_frame = CTkFrame(self.main_view_frame,fg_color='white')
             info_frame.pack(side='left', anchor='nw', pady=20, padx=20)
-            CTkLabel(info_frame, text='Thông tin tài khoản', font=("Adobe Kaiti Std R", 20)).pack(side='top')
+            CTkLabel(info_frame, text='Thông tin tài khoản', font=("Adobe Kaiti Std R", 20),text_color="black").pack(side='top')
             treeFrame = ttk.Frame(info_frame,borderwidth=1)
             treeFrame.pack(side='left', pady=10, padx=20)
             treeScroll = ttk.Scrollbar(treeFrame)
@@ -411,7 +411,7 @@ class DashboardScreen(CTk):
                         separator.grid(row=row_index, column=0, columnspan=len(table_action), sticky='ew', pady=(0, 40))
                         if hasattr(my_frame, "no_action_label"):
                             my_frame.no_action_label.destroy()
-                        checkbox=CTkCheckBox(farme2,text='Đăng nhập',variable=self.checkLogin)
+                        checkbox=CTkCheckBox(farme2,text='Đăng nhập',variable=self.checkLogin,text_color="black")
                         checkbox.pack(side='top', anchor='w', padx=10,pady=10)
 
                         start_button = CTkButton(farme2, text='Bắt đầu', height=40, command=self.start_action)
@@ -426,7 +426,7 @@ class DashboardScreen(CTk):
                             farme2.start_button.destroy()
                         farme2.start_button = start_button
                 else:
-                        no_action_label = CTkLabel(farme2, text='Không tìm thấy hành động.')
+                        no_action_label = CTkLabel(farme2, text='Không tìm thấy hành động.',text_color="black")
                         no_action_label.pack(side='top', padx=20, pady=10, anchor='n')
                         if hasattr(my_frame, "no_action_label"):
                             my_frame.no_action_label.destroy()
@@ -472,7 +472,7 @@ class DashboardScreen(CTk):
                         window_comment.destroy()
                         window_comment = None
                     window_width = 500
-                    window_comment = CTkToplevel(self.main_view_frame)
+                    window_comment = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                     window_comment.title("Bình luận bài viết")
                     window_comment.resizable(False,False)
                     window_comment.deiconify()
@@ -482,26 +482,26 @@ class DashboardScreen(CTk):
                     input_frame_min.pack(fill='x', side='left')  
                     text_2 = CTkLabel(input_frame_min, text='Delay min', text_color='black', font=font_text)
                     text_2.pack(side='top', anchor='w')
-                    input_min = CTkEntry(input_frame_min, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                    input_min = CTkEntry(input_frame_min, placeholder_text='Nhập gian thời Delay min', text_color='black',fg_color='white', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
                     input_min.pack(side='top')
                     input_frame_max = CTkFrame(container_frame_max_min, fg_color='transparent')
                     input_frame_max.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                     text_1 = CTkLabel(input_frame_max, text='Delay max', text_color='black', font=font_text)
                     text_1.pack(side='top', anchor='w')
-                    input_max = CTkEntry(input_frame_max, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                    input_max = CTkEntry(input_frame_max, placeholder_text='Nhập thời gian Delay max', text_color='black',fg_color='white', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
                     input_max.pack(side='top', anchor='w')
                     frame = CTkFrame(window_comment, fg_color='transparent')
                     frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
                     text_3 = CTkLabel(frame, text='Số lượng hành động', text_color='black', font=font_text)
                     text_3.pack(side='top', anchor='w')
-                    input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng hành động', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                    input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng hành động', text_color='black',fg_color='white', font=font_text, width=window_width*0.9, height=40)
                     
                     input_max_message.pack(fill='x', side='top')
                     love_post=CTkCheckBox(frame,text='Tim bài viết',variable=self.love)
                     love_post.pack(fill='x', side='top', pady=(10,5))
                     text_4 = CTkLabel(frame, text='Nội dung', text_color='black', font=font_text)
                     text_4.pack(side='top', anchor='w')
-                    input_content =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                    input_content =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                     input_content.pack(side='top', anchor='w')
                     CTkScrollbar(frame,command=input_content.yview)
                     input_content.pack(side='top', anchor='w')
@@ -562,7 +562,7 @@ class DashboardScreen(CTk):
                             add_friend = None
 
                         window_width = 500
-                        add_friend = CTkToplevel(self.main_view_frame)
+                        add_friend = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         add_friend.title("Gửi kết bạn")
                         add_friend.resizable(False,False)
                         add_friend.deiconify()
@@ -572,19 +572,20 @@ class DashboardScreen(CTk):
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,
+                                             fg_color='white',border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', fg_color='white',font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(add_friend, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
                         text_3 = CTkLabel(frame, text='Kết bạn tối đa', text_color='black', font=font_text)
                         text_3.pack(side='top', anchor='w')
-                        input_max_friend = CTkEntry(frame, placeholder_text='Nhập số lượng kết bạn', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        input_max_friend = CTkEntry(frame, placeholder_text='Nhập số lượng kết bạn', text_color='black',fg_color='white', font=font_text, width=window_width*0.9, height=40)
                         input_max_friend.pack(fill='x', side='top')
                         CTkLabel(frame, text='Kết bạn từ', text_color='black', font=font_text).pack(side='top', anchor='w')
                         item_auto=['Kết bạn theo sđt','Kết bạn theo gợi ý','Kết bạn trong nhóm(trừ trưởng ,phó nhóm)']
@@ -595,7 +596,7 @@ class DashboardScreen(CTk):
                             tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item,
                                            variable=selected_item_auto,command=lambda:check()).pack(side='left', anchor='w')
                         label_input_phone=CTkLabel(frame,text_color='black',font=font_text,text='Danh sách số điện thoại (mỗi số 1 dòng)')
-                        input_phone =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        input_phone =CTkTextbox(frame , text_color='black', width=window_width, fg_color='white',height=100,border_color='black',border_width=1)
                         check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided1)
                         def check():
                             if(selected_item_auto.get()=='Kết bạn theo sđt'):
@@ -666,7 +667,7 @@ class DashboardScreen(CTk):
                             sent_message = None
 
                         window_width = 500
-                        sent_message = CTkToplevel(self.main_view_frame)
+                        sent_message = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         sent_message.title("Nhắn tin")
                         sent_message.resizable(False,False)
                         sent_message.deiconify()
@@ -676,27 +677,27 @@ class DashboardScreen(CTk):
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', fg_color='white',text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(sent_message, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
                         text_3 = CTkLabel(frame, text='Số lượng tin nhắn gửi đi', text_color='black', font=font_text)
                         text_3.pack(side='top', anchor='w')
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng tin nhắn gửi đi', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng tin nhắn gửi đi', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
                         input_max_message.pack(fill='x', side='top')
                         text_4 = CTkLabel(frame, text='Nội dung', text_color='black', font=font_text)
                         text_4.pack(side='top', anchor='w')
-                        input_content =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        input_content =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         input_content.pack(side='top', anchor='w')
                         CTkScrollbar(frame,command=input_content.yview)
                         input_content.pack(side='top', anchor='w')
-                        label_file_path = CTkLabel(frame, text="", justify="left")
+                        label_file_path = CTkLabel(frame, text="", justify="left",text_color="black")
                         label_file_path.pack(side='top', anchor='w')
                         CTkButton(frame, text='Tải lên file đính kèm', command=lambda: open_file_dialog(label_file_path), text_color='white', font=font_text).pack(side='top', anchor='w', pady=(10, 0))
                         text_5 = CTkLabel(frame, text='Tự động', text_color='black', font=font_text)
@@ -706,7 +707,7 @@ class DashboardScreen(CTk):
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5)
                         text_6 = CTkLabel(frame, text='Danh sách số điện thoại(mỗi số 1 dòng)', text_color='black', font=font_text)
-                        input_phone =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
                         check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided2)
                         def open_file_dialog(label):
@@ -805,7 +806,7 @@ class DashboardScreen(CTk):
                             post_window = None
 
                         window_width = 500
-                        post_window = CTkToplevel(self.main_view_frame)
+                        post_window = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         post_window.title("Đăng bài")
                         post_window.resizable(False, False)
                         post_window.deiconify()
@@ -822,7 +823,7 @@ class DashboardScreen(CTk):
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
 
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40, border_color='black', border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40, border_color='black', border_width=1)
                         input_min.pack(side='top')
 
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
@@ -831,16 +832,16 @@ class DashboardScreen(CTk):
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
 
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40, border_color='black', border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40, border_color='black', border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(scroll, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
                         text_4 = CTkLabel(frame, text='Nội dung bài viết', text_color='black', font=font_text)
                         text_4.pack(side='top', anchor='w')
-                        input_content = CTkTextbox(frame, text_color='black', width=window_width, height=100, border_color='black', border_width=1)
+                        input_content = CTkTextbox(frame, fg_color='white',text_color='black', width=window_width, height=100, border_color='black', border_width=1)
                         input_content.pack(side='top', anchor='w')
                         CTkLabel(frame, text='File đính kèm', text_color='black', font=font_text).pack(side='top', anchor='w')
-                        label_file_path = CTkLabel(frame, text="", justify="left")
+                        label_file_path = CTkLabel(frame, text="", justify="left",text_color="black")
                         label_file_path.pack(side='top', anchor='w')
                         CTkButton(frame, text='Tải lên file đính kèm', command=lambda: open_file_dialog(label_file_path), text_color='white', font=font_text).pack(side='top', anchor='w', pady=(10, 0))
                         if data is not None:
@@ -916,30 +917,29 @@ class DashboardScreen(CTk):
 
                         window_width = 500
 
-                        new_feed = CTkToplevel(self.main_view_frame)
+                        new_feed = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         new_feed.title("Lướt new feed")
                         new_feed.resizable(False,False)
                         new_feed.deiconify()
-
                         container_frame_max_min = CTkFrame(new_feed, fg_color='transparent')
                         container_frame_max_min.pack(fill='x', padx=10, pady=5, anchor='ne', side='top') 
                         input_frame_max = CTkFrame(container_frame_max_min, fg_color='transparent')   
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max,placeholder_text='Nhập gian thời Delay min', text_color='black', fg_color='white',font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
-                        text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
+                        text_1 = CTkLabel(input_frame, text='Delay max',fg_color="white", text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(new_feed, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
-                        text_3 = CTkLabel(frame, text='Số lượng bài viết tương tác', text_color='black', font=font_text)
+                        text_3 = CTkLabel(frame, text='Số lượng bài viết tương tác',fg_color="white", text_color='black', font=font_text)
                         text_3.pack(side='top', anchor='w')
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng bài viết tương tác', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng bài viết tương tác', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
                         input_max_message.pack(fill='x', side='top')
                         if data is not None:
                             min=data[3]
@@ -995,7 +995,7 @@ class DashboardScreen(CTk):
                         
                         window_width = 500
                        
-                        agree_window = CTkToplevel(self.main_view_frame)
+                        agree_window = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         agree_window.title("Đồng ý kết bạn")
                         agree_window.resizable(False,False)
                         agree_window.deiconify()
@@ -1007,13 +1007,13 @@ class DashboardScreen(CTk):
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,fg_color='white',border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,fg_color='white',border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(agree_window, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
@@ -1031,7 +1031,7 @@ class DashboardScreen(CTk):
                                 input_max_message.pack_forget()
                         for item in item_auto:
                             tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=toggle_input_max).pack(side='left', anchor='w')
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt đồng ý', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt đồng ý', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
                         if data is not None:
                             min=data[3]
                             max=data[4]
@@ -1087,7 +1087,7 @@ class DashboardScreen(CTk):
                         window_width = 500
                         window_height = 300
                      
-                        unfriend_window = CTkToplevel(self.main_view_frame)
+                        unfriend_window = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         unfriend_window.title("Thu hồi kết bạn")
                         unfriend_window.resizable(False,False)
                         unfriend_window.deiconify()
@@ -1100,13 +1100,13 @@ class DashboardScreen(CTk):
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text,fg_color='white', width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,fg_color='white',border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(unfriend_window, fg_color='transparent')
                         frame.pack(fill='x', padx=10, pady=5, anchor='ne', side='top')
@@ -1124,7 +1124,7 @@ class DashboardScreen(CTk):
                                 input_max_message.pack_forget()
                         for item in item_auto:
                             tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=toggle_input_max).pack(side='left', anchor='w')
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt thu hồi', text_color='black', font=font_text, width=window_width*0.9, height=40)
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt thu hồi', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
                         def save_unfriend_window():
                             try:
                                 id=self.selected_value.get()    
@@ -1179,7 +1179,7 @@ class DashboardScreen(CTk):
                             invite_group = None
 
                         window_width = 500
-                        invite_group = CTkToplevel(self.main_view_frame)
+                        invite_group = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         invite_group.title("Mời tham gia nhóm")
                         invite_group.resizable(False,False)
                         invite_group.deiconify()
@@ -1189,25 +1189,25 @@ class DashboardScreen(CTk):
                         input_frame_max.pack(fill='x', side='left')  
                         text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
                         text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_min.pack(side='top')
                         input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
                         input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
                         text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
                         text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, width=window_width/2.3, height=40,border_color='black',border_width=1)
+                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
                         input_max.pack(side='top', anchor='w')
                         frame = CTkFrame(invite_group, fg_color='transparent')
                         frame.pack(fill='x',pady=5, anchor='ne', side='top')
                         CTkLabel(frame,text='Số lượng lời mời mỗi tài khoản',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lời mời tối đa', text_color='black', font=font_text, width=window_width, height=40)
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lời mời tối đa', text_color='black', font=font_text, fg_color='white',width=window_width, height=40)
                         input_max_message.pack(side='top',anchor='n',pady=(0,20),padx=10)
                         select=['Danh sách sđt',' Danh sách bạn bè']
                         selected_item_auto = StringVar(value='Danh sách sđt')
                         CTkLabel(frame,text='Mời theo',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5,fill='y', expand=True)
-                        input_phone =CTkTextbox(frame , text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
                         def toggle_input_max():
                             if selected_item_auto.get() == 'Danh sách sđt':
@@ -1249,7 +1249,7 @@ class DashboardScreen(CTk):
                             global new_window
                             new_window.destroy()
                             new_window = None
-                        new_window = CTkToplevel(self.main_view_frame)
+                        new_window = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         new_window.title("Thêm hành động")
                         window_width = 1000
                         window_height = 500
