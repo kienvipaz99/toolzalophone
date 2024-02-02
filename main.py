@@ -81,6 +81,7 @@ class DashboardScreen(CTk):
         
         
         
+        
     def perform_action(self,device,action_name,item):
         id=item[0]
         min_number=item[3]
@@ -174,21 +175,21 @@ class DashboardScreen(CTk):
         self.dashboard_frame = CTkFrame(master=self.root, width=self.frame_width, height=self.frame_height, fg_color="#f6f6f6")
         self.dashboard_frame.pack_propagate(0)
         self.dashboard_frame.pack(expand=True, anchor="center")
-        sidebar_frame = CTkFrame(master=self.dashboard_frame, fg_color="#F1F4FA", width=self.frame_width*0.2, height=self.frame_height, corner_radius=0)
+        sidebar_frame = CTkFrame(master=self.dashboard_frame, fg_color="#0F2D7C", width=self.frame_width*0.16, height=self.frame_height, corner_radius=0)
         sidebar_frame.pack_propagate(0)
         sidebar_frame.pack(fill="y", anchor="w", side="left")
-        logoapp = Image.open('assets/iconapp/zalo.png')
-        ctk_image = CTkImage(light_image=logoapp, size=(50, 50))
-        title = CTkLabel(sidebar_frame, text_color='black', text='Phần mềm auto Zalo', font=("Adobe Kaiti Std R", 20), image=ctk_image, compound="left")
-        title.pack(anchor='center', pady=20, padx=(0, 10))
-        button_names = ['Tài khoản', 'Hành động', 'Thiết bị']
-        icon_tab = ['assets/iconapp/account.png', 'assets/iconapp/message.png', 'assets/iconapp/phones.png']
+        logoapp = Image.open('assets/iconapp/logo.png')
+        ctk_image = CTkImage(light_image=logoapp, size=(300, 100))
+        title = CTkLabel(sidebar_frame,image=ctk_image, compound="left",text='')
+        title.pack(anchor='center', pady=20, )
+        button_names = ['            Tài khoản', '            Hành động', '            Thiết bị','            Cài đặt']
+        icon_tab = ['assets/iconapp/account.png', 'assets/iconapp/action.png', 'assets/iconapp/phones.png','assets/iconapp/setting.png']
         self.ctk_buttons = []
         for index, path in enumerate(icon_tab):
             logo_img_data = Image.open(path)
             ctk_image = CTkImage(light_image=logo_img_data, size=(30, 30))
             button_text = button_names[index]
-            button = CTkButton(sidebar_frame, image=ctk_image, text=button_text, corner_radius=5, text_color='black', command=lambda i=index: self.button_clicked(i), font=("Adobe Kaiti Std R", 17), width=self.frame_width*0.19, height=50, anchor='center', fg_color='transparent', hover_color='#A9DFFD')
+            button = CTkButton(sidebar_frame, image=ctk_image, text=button_text, corner_radius=5, text_color='black', command=lambda i=index: self.button_clicked(i), font=("Adobe Kaiti Std R", 17), width=self.frame_width*0.145, height=50, anchor='w', fg_color='transparent', hover_color='#A9DFFD')
             button.pack(pady=10)
             self.ctk_buttons.append(button)
         self.main_view_frame = CTkScrollableFrame(master=self.dashboard_frame,fg_color='white',scrollbar_button_color='white',orientation="vertical",scrollbar_button_hover_color='white')
@@ -196,7 +197,7 @@ class DashboardScreen(CTk):
 
     def reset_button_colors(self):
         for button in self.ctk_buttons:
-            button.configure(fg_color='transparent', text_color='black')
+            button.configure(fg_color='transparent', text_color='white')
             
     def close_all_toplevels(self):
         # Duyệt qua tất cả các cửa sổ và đóng chúng
@@ -206,7 +207,7 @@ class DashboardScreen(CTk):
     def button_clicked(self, index):
         self.reset_button_colors() 
         button = self.ctk_buttons[index]
-        button.configure(fg_color='#A9DFFD')
+        button.configure(fg_color='#62A2D9')
         self.close_all_toplevels()
         if index == 0:
             self.hien_thi_man_hinh("Tài khoản")
@@ -222,46 +223,41 @@ class DashboardScreen(CTk):
             fame1 = CTkFrame(self.main_view_frame,fg_color='white')
             fame1.pack(side='left', anchor='nw', padx=10,pady=20)  
             label = CTkLabel(fame1,text_color='black', text="Thêm tài khoản", font=("Arial", 20), fg_color="white", anchor='w')
-            label.pack(padx=10)
-            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10,fg_color="white", font=("Adobe Kaiti Std R", 14), height=40, width=150)
+            label.pack(padx=10,pady=(0,30))
+            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10,fg_color="white", font=("Adobe Kaiti Std R", 17), height=45, width=200)
             input_taikhoan.pack(pady=10, padx=10)
-            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', fg_color="white",corner_radius=10, font=("Adobe Kaiti Std R", 14), height=40, width=150)
-            input_mk.pack(pady=10, padx=10)
+            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', fg_color="white",corner_radius=10, font=("Adobe Kaiti Std R", 14), height=45, width=200,show='*')
+            input_mk.pack(pady=10, padx=10,)
             info_frame = CTkFrame(self.main_view_frame,fg_color='white')
             info_frame.pack(side='left', anchor='nw', pady=20, padx=20)
             CTkLabel(info_frame, text='Thông tin tài khoản', font=("Adobe Kaiti Std R", 20),text_color="black").pack(side='top')
-            treeFrame = ttk.Frame(info_frame,borderwidth=1)
-            treeFrame.pack(side='left', pady=10, padx=20)
-            treeScroll = ttk.Scrollbar(treeFrame)
-            treeScroll.pack(side="right", fill="y")
-            cols = ("Stt", "Id","Tài khoản",  "Trạng thái","Proxy")
-            treeview = ttk.Treeview(treeFrame, show="headings", yscrollcommand=treeScroll.set, columns=cols, height=14)
-            treeview.column("Stt", width=50)
-            treeview.column("Id", width=50)
-            treeview.column("Tài khoản", width=150)
-            treeview.column("Trạng thái", width=100)
-            treeview.column("Proxy", width=100)
-            treeview.heading("Stt", text="Stt")
-            treeview.heading("Id", text="Id")
-            treeview.heading("Tài khoản", text="Tài khoản")
-            treeview.heading("Trạng thái", text="Trạng thái")
-            treeview.heading("Proxy", text="Proxy")
-            treeview.pack()
+      
+            treeFrame = CTkFrame(info_frame,fg_color='#dbdbdb')
+            treeFrame.pack(pady=40, padx=10, side='bottom')  
+            cols = ("#",'Chọn',"Tài khoản",  "Trạng thái","Proxy")
+            first_two_columns_width = 50
 
+            for i, column in enumerate(cols):
+                label = CTkLabel(treeFrame, text=column, width=first_two_columns_width if i < 2 else 150)
+                label.grid(row=0, column=i, sticky='w', pady=10, padx=10)
+            checkbox_states = []
+            def clear_table_frame2(keep_header=True):
+                start_index = 5 if keep_header else 0
+                for widget in treeFrame.winfo_children()[start_index:]:
+                    widget.destroy()
             def load_data():
+                clear_table_frame2()
                 cursor_account.execute("SELECT * FROM accounts")
                 data_account=cursor_account.fetchall()
-                treeview.delete(*treeview.get_children())
-                stt = 1
-                for row in data_account:
-                    id = row[0]
-                    tai_khoan = row[1]
-                    proxy = row[3] if row[3] else ''
-                    treeview.insert("", "end", values=(stt, id, tai_khoan, proxy))
-                    stt += 1
-                context_menu = tk.Menu(treeview, tearoff=0)
-                context_menu.add_command(label="Xóa")
-                context_menu.config(font=("Arial", 20), type="menubar")
+                for row_index, row_data in enumerate(data_account, start=1):
+                    checkbox_state = BooleanVar()
+                    checkbox_state.set(False)
+                    checkbox_states.append((row_data[0], checkbox_state))
+                    CTkLabel(treeFrame,text=row_index,font=font_text,text_color='black',width=50,).grid(row=row_index, column=0, sticky='n',padx=10,pady=10)
+                    CTkCheckBox(treeFrame,text='',width=50,variable=checkbox_state,fg_color='#114AA0').grid(row=row_index, column=1, sticky='n',padx=20,pady=10)
+                    CTkLabel(treeFrame,text=row_data[1],font=font_text,text_color='black').grid(row=row_index, column=2, sticky='n',pady=10)
+                    CTkLabel(treeFrame,text='_',font=font_text,text_color='black').grid(row=row_index, column=3, sticky='n',pady=10)
+                    CTkLabel(treeFrame,text='_',font=font_text,text_color='black').grid(row=row_index, column=4, sticky='n',pady=10)
             def them_du_lieu():
                 taikhoan=input_taikhoan.get()
                 matkahu=input_mk.get()
@@ -269,25 +265,17 @@ class DashboardScreen(CTk):
                 mat_khau = matkahu  
                 proxy = None  
                 if tai_khoan and mat_khau:
-                    stt = len(treeview.get_children()) + 1
-                    treeview.insert("", "end", values=(stt, tai_khoan))
                     cursor_account.execute("INSERT INTO accounts (username, password, proxy) VALUES (?, ?, ?)", (tai_khoan, mat_khau, proxy))
                     conn_account.commit()
                 load_data()
-            def update_stt():
-                for i, child in enumerate(treeview.get_children(), start=1):
-                    values = treeview.item(child)['values']
-                    values[0] = i
-                    treeview.item(child, values=values)
+
             def delete_account():
-                selected_items = treeview.selection()
+                selected_items = [id for id, state in checkbox_states if state.get()]
                 for selected_item in selected_items:
-                    selected_row = treeview.item(selected_item)
-                    account_id = selected_row['values'][1]
-                    treeview.delete(selected_item)
-                    cursor_account.execute("DELETE FROM accounts WHERE id=?", (account_id,))
+                    cursor_account.execute("DELETE FROM accounts WHERE id=?", (selected_item,))
                     conn_account.commit()
-                    update_stt()
+                load_data()
+
             def add_file_text():
                 try:
                     filename = filedialog.askopenfilename(initialdir="/", title="Chọn file text",
@@ -300,8 +288,7 @@ class DashboardScreen(CTk):
                                 tai_khoan = data[0]
                                 mat_khau = data[1]
                                 proxy = data[2] if len(data) > 2 else ''
-                                stt = len(treeview.get_children()) + 1
-                                treeview.insert("", "end", values=(stt, tai_khoan, proxy))
+                               
                                 cursor_account.execute("INSERT INTO accounts (username, password, proxy) VALUES (?, ?, ?)",
                                             (tai_khoan, mat_khau, proxy))
                         conn_account.commit()
@@ -309,11 +296,11 @@ class DashboardScreen(CTk):
                     load_data()
                 except Exception as e:
                     tkinter.messagebox.showerror("Lỗi", e)
-            btn_them = CTkButton(fame1, corner_radius=10, fg_color='#A9DFFD', height=40, width=100, text='Thêm', font=("Adobe Kaiti Std R", 15), text_color='black',command=them_du_lieu,hover=False)
+            btn_them = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Thêm', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command=them_du_lieu)
             btn_them.pack(anchor='c',pady=(20,0))
-            btn_them_file = CTkButton(fame1, corner_radius=10, fg_color='#A9DFFD', height=40, width=100, text='Thêm từ file .txt', font=("Adobe Kaiti Std R", 15), text_color='black',command=add_file_text,hover=False)
+            btn_them_file = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Thêm từ file', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command= add_file_text)
             btn_them_file.pack(anchor='c',pady=(20,0))
-            btn_xoa = CTkButton(fame1, corner_radius=10, fg_color='#ED1B2F', height=40, width=100, text='Xóa', font=("Adobe Kaiti Std R", 15), text_color='white',command=delete_account,hover=False)
+            btn_xoa = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Xóa', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command=delete_account)
             btn_xoa.pack(anchor='c',pady=(20,0))
             load_data()
         elif loai_man_hinh == "Hành động":
@@ -330,11 +317,11 @@ class DashboardScreen(CTk):
                 data = fetch_data()
                 for row_index, row_data in enumerate(data, start=1):
                     radio_button = CTkRadioButton(table_frame, fg_color='#566169', text=row_data[1], command=lambda: calldata(), variable=self.selected_value, value=row_data[0], width=100)
-                    radio_button.grid(row=row_index, column=0, sticky='w', padx=25)
-                    CTkButton(table_frame, text='Sửa', command=lambda row=row_data: edit_timeline(row), width=150, image=img_pen).grid(row=row_index, column=1, sticky='w', pady=5, padx=10)
-                    CTkButton(table_frame, image=img_bin, text='Xoá', command=lambda id=row_data[0]: delete_timeline(id), width=150).grid(row=row_index, column=2, sticky='w', pady=5, padx=10)
+                    radio_button.grid(row=row_index, column=0, sticky='n',pady=10)
+                    CTkButton(table_frame,fg_color='#114AA0' ,text='Sửa', command=lambda row=row_data: edit_timeline(row), width=150, image=img_pen).grid(row=row_index, column=1, sticky='n', pady=10,)
+                    CTkButton(table_frame, image=img_bin,fg_color='#114AA0', text='Xoá', command=lambda id=row_data[0]: delete_timeline(id), width=150).grid(row=row_index, column=2, sticky='n', pady=10, )
                     separator = ttk.Separator(table_frame, orient='horizontal')
-                    separator.grid(row=row_index, column=0, columnspan=3, sticky='ew', pady=(0, 40))
+                    separator.grid(row=row_index, column=0, columnspan=3, sticky='ew', pady=(0, 50))
             def show_add_timeline_modal():
                 new_timeline_name = simpledialog.askstring("Tạo Timeline Mới", "Nhập tên của Timeline:")
                 if new_timeline_name:
@@ -378,13 +365,13 @@ class DashboardScreen(CTk):
                     load_data1()
             farme1 = CTkFrame(self.main_view_frame,fg_color='white')
             farme1.pack(side='left', padx=20, pady=10, anchor='nw')
-            header_frame = CTkFrame(farme1, width=400, height=100, fg_color='#182240')
+            header_frame = CTkFrame(farme1, width=400, height=100, fg_color='#114AA0')
             header_frame.pack(pady=20, padx=30, side='top', fill='x') 
             timeline_label = CTkLabel(header_frame, text='Timeline', text_color='white')
             timeline_label.pack(side='left', padx=20, pady=10)
-            btn_add_timeline = CTkButton(header_frame, text='+ Tạo timeline mới', text_color='white', command=show_add_timeline_modal)
+            btn_add_timeline = CTkButton(header_frame, text='+ Tạo timeline mới', fg_color='#FF8000',text_color='white', command=show_add_timeline_modal)
             btn_add_timeline.pack(side='right', padx=20, pady=10)
-            table_frame = CTkFrame(farme1)
+            table_frame = CTkFrame(farme1,fg_color='#dbdbdb')
             table_frame.pack(pady=10, padx=10, side='bottom')  
             columns = ['Tên', 'Sửa', 'Xóa']
             for i, column in enumerate(columns):
@@ -402,19 +389,19 @@ class DashboardScreen(CTk):
                 if(data):
                     for row_index, row_data in enumerate(data, start=1):
                         stt = row_index
-                        CTkLabel(my_frame,text=stt,width=150).grid(row=row_index, column=0,sticky="nsew",padx=5,pady=5)
-                        CTkLabel(my_frame,text=row_data[2],width=150).grid(row=row_index, column=1,sticky="nsew",padx=5,pady=5)
-                        CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_action(row),width=130,image=img_pen).grid(row=row_index, column=2, sticky="nsew",pady=5,padx=5)
-                        CTkButton(my_frame ,image=img_bin,text='Xoá',width=130, command=lambda id=row_data[0]: delete_action(id)).grid(row=row_index, column=3, sticky="nsew",pady=5,padx=5)
+                        CTkLabel(my_frame,text=stt,width=50).grid(row=row_index, column=0,sticky="n",pady=5)
+                        CTkLabel(my_frame,text=row_data[2],width=150).grid(row=row_index, column=1,sticky="n",pady=5)
+                        CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_action(row),fg_color='#114AA0',width=150,image=img_pen).grid(row=row_index, column=2, sticky="n",pady=5,)
+                        CTkButton(my_frame ,image=img_bin,text='Xoá',fg_color='#114AA0',width=150, command=lambda id=row_data[0]: delete_action(id)).grid(row=row_index, column=3, sticky="n",pady=5)
 
                         separator = ttk.Separator(my_frame, orient='horizontal')
                         separator.grid(row=row_index, column=0, columnspan=len(table_action), sticky='ew', pady=(0, 40))
                         if hasattr(my_frame, "no_action_label"):
                             my_frame.no_action_label.destroy()
-                        checkbox=CTkCheckBox(farme2,text='Đăng nhập',variable=self.checkLogin,text_color="black")
+                        checkbox=CTkCheckBox(farme2,text='Đăng nhập',variable=self.checkLogin,text_color="black",fg_color='#114AA0')
                         checkbox.pack(side='top', anchor='w', padx=10,pady=10)
 
-                        start_button = CTkButton(farme2, text='Bắt đầu', height=40, command=self.start_action)
+                        start_button = CTkButton(farme2, text='Bắt đầu',text_color='white',font=font_text,fg_color='#114AA0', height=40, command=self.start_action)
                         start_button.pack(side='bottom', anchor='w', padx=10)
 
                         if hasattr(farme2, "checkbox"):
@@ -444,18 +431,18 @@ class DashboardScreen(CTk):
                     calldata()
             farme2 = CTkFrame(self.main_view_frame,fg_color='white')
             farme2.pack(side='right', padx=20, pady=10,anchor='ne')
-            header2=CTkFrame(farme2,height=100,fg_color='#182240')
+            header2=CTkFrame(farme2,height=100,fg_color='#114AA0')
             header2.pack(pady=20, padx=30,side='top', fill='x')
             title2=CTkLabel(header2, text='Chi tiết hành động',text_color='white')
             title2.pack(side='left',padx=20,pady=10)
-            btn_add_action=CTkButton(header2, text='+ Thêm hành động',text_color='white',command=lambda: open_add_action_window())
+            btn_add_action=CTkButton(header2, text='+ Thêm hành động',text_color='white',fg_color='#FF8000',command=lambda: open_add_action_window())
             btn_add_action.pack(side='right',padx=20,pady=10,fill="y")
-            my_frame = CTkFrame(farme2)
+            my_frame = CTkFrame(farme2,fg_color='#dbdbdb')
             my_frame.pack(pady=10, padx=10,fill='x')
             table_action = ['ID', 'Tên hành động','Sửa','Xoá']
             for i, column in enumerate(table_action):
-                label = CTkLabel(my_frame, text=column,width=150)
-                label.grid(row=0, column=i, sticky='w', pady=5,padx=5)
+                label = CTkLabel(my_frame, text=column,width=50 if i < 2 else 150)
+                label.grid(row=0, column=i, sticky='n', pady=5,padx=5)
             calldata()
             def open_window_comment(data=None):
                     global window_comment
@@ -497,7 +484,7 @@ class DashboardScreen(CTk):
                     input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượng hành động', text_color='black',fg_color='white', font=font_text, width=window_width*0.9, height=40)
                     
                     input_max_message.pack(fill='x', side='top')
-                    love_post=CTkCheckBox(frame,text='Tim bài viết',variable=self.love)
+                    love_post=CTkCheckBox(frame,text='Tim bài viết',text_color='black',font=font_text,fg_color='#114AA0',variable=self.love)
                     love_post.pack(fill='x', side='top', pady=(10,5))
                     text_4 = CTkLabel(frame, text='Nội dung', text_color='black', font=font_text)
                     text_4.pack(side='top', anchor='w')
@@ -597,7 +584,7 @@ class DashboardScreen(CTk):
                                            variable=selected_item_auto,command=lambda:check()).pack(side='left', anchor='w')
                         label_input_phone=CTkLabel(frame,text_color='black',font=font_text,text='Danh sách số điện thoại (mỗi số 1 dòng)')
                         input_phone =CTkTextbox(frame , text_color='black', width=window_width, fg_color='white',height=100,border_color='black',border_width=1)
-                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided1)
+                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',fg_color='#114AA0',font=font_text,text_color='black',variable=self.checkDivided1)
                         def check():
                             if(selected_item_auto.get()=='Kết bạn theo sđt'):
                                 label_input_phone.pack(side='top',anchor='w',pady=5)
@@ -709,7 +696,7 @@ class DashboardScreen(CTk):
                         text_6 = CTkLabel(frame, text='Danh sách số điện thoại(mỗi số 1 dòng)', text_color='black', font=font_text)
                         input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
-                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',font=font_text,text_color='black',variable=self.checkDivided2)
+                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',fg_color='#114AA0',font=font_text,text_color='black',variable=self.checkDivided2)
                         def open_file_dialog(label):
                             file_paths = filedialog.askopenfilenames(title="Chọn tệp", filetypes=[("Ảnh", ("*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"))])
     
@@ -1323,7 +1310,7 @@ class DashboardScreen(CTk):
 
             
         elif loai_man_hinh == "Thiết bị":           
-            CTkLabel(self.main_view_frame, text='Quản lý thiết bị', font=("Adobe Kaiti Std R", 20)).pack(side='top',anchor='nw')
+            CTkLabel(self.main_view_frame, text='Quản lý thiết bị',text_color='black', font=("Adobe Kaiti Std R", 20)).pack(side='top',anchor='nw')
             treeFrame = ttk.Frame(self.main_view_frame,borderwidth=1)
             treeFrame.pack(side='left', anchor='nw', pady=10, padx=20)
             treeScroll = ttk.Scrollbar(treeFrame)
@@ -1351,9 +1338,10 @@ class DashboardScreen(CTk):
 if __name__ == "__main__":
     root = CTk()
     dashboard_screen = DashboardScreen(root)
-    root.title('Phần mềm auto tool Zalo')
+    root.title('Phần mềm ZL phone')
     icon = tk.PhotoImage(file="assets/iconapp/zalo.png")
     root.iconphoto(False, icon)
+    # root.iconbitmap('assets/iconapp/zalo.ico')
     # root.resizable(False,False)
     root.state('zoomed')
     root.mainloop()
