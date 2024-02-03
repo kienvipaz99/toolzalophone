@@ -179,7 +179,7 @@ class DashboardScreen(CTk):
         sidebar_frame.pack_propagate(0)
         sidebar_frame.pack(fill="y", anchor="w", side="left")
         logoapp = Image.open('assets/iconapp/logo.png')
-        ctk_image = CTkImage(light_image=logoapp, size=(300, 100))
+        ctk_image = CTkImage(light_image=logoapp, size=(self.frame_width*0.15, self.frame_width*0.085))
         title = CTkLabel(sidebar_frame,image=ctk_image, compound="left",text='')
         title.pack(anchor='center', pady=20, )
         button_names = ['            Tài khoản', '            Hành động', '            Thiết bị','            Cài đặt']
@@ -224,9 +224,9 @@ class DashboardScreen(CTk):
             fame1.pack(side='left', anchor='nw', padx=10,pady=20)  
             label = CTkLabel(fame1,text_color='black', text="Thêm tài khoản", font=("Arial", 20), fg_color="white", anchor='w')
             label.pack(padx=10,pady=(0,30))
-            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10,fg_color="white", font=("Adobe Kaiti Std R", 17), height=45, width=200)
+            input_taikhoan = CTkEntry(fame1, placeholder_text='Tài khoản', corner_radius=10,fg_color="white", font=("Adobe Kaiti Std R", 17),text_color='black', height=45, width=200)
             input_taikhoan.pack(pady=10, padx=10)
-            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', fg_color="white",corner_radius=10, font=("Adobe Kaiti Std R", 14), height=45, width=200,show='*')
+            input_mk = CTkEntry(fame1, placeholder_text='Mật khẩu', fg_color="white",corner_radius=10, font=("Adobe Kaiti Std R", 14), height=45, width=200,show='*',text_color='black')
             input_mk.pack(pady=10, padx=10,)
             info_frame = CTkFrame(self.main_view_frame,fg_color='white')
             info_frame.pack(side='left', anchor='nw', pady=20, padx=20)
@@ -238,7 +238,7 @@ class DashboardScreen(CTk):
             first_two_columns_width = 50
 
             for i, column in enumerate(cols):
-                label = CTkLabel(treeFrame, text=column, width=first_two_columns_width if i < 2 else 150)
+                label = CTkLabel(treeFrame, text=column, text_color='black',width=first_two_columns_width if i < 2 else 150)
                 label.grid(row=0, column=i, sticky='w', pady=10, padx=10)
             checkbox_states = []
             def clear_table_frame2(keep_header=True):
@@ -375,7 +375,7 @@ class DashboardScreen(CTk):
             table_frame.pack(pady=10, padx=10, side='bottom')  
             columns = ['Tên', 'Sửa', 'Xóa']
             for i, column in enumerate(columns):
-                label = CTkLabel(master=table_frame, text=column,width=150)
+                label = CTkLabel(master=table_frame, text=column,text_color='black',font=font_text,width=150)
                 label.grid(row=0, column=i, sticky='w',pady=10,padx=10)
             load_data1()
             def clear_table_frame2(keep_header=True):
@@ -441,7 +441,7 @@ class DashboardScreen(CTk):
             my_frame.pack(pady=10, padx=10,fill='x')
             table_action = ['ID', 'Tên hành động','Sửa','Xoá']
             for i, column in enumerate(table_action):
-                label = CTkLabel(my_frame, text=column,width=50 if i < 2 else 150)
+                label = CTkLabel(my_frame,text_color='black',font=font_text, text=column,width=50 if i < 2 else 150)
                 label.grid(row=0, column=i, sticky='n', pady=5,padx=5)
             calldata()
             def open_window_comment(data=None):
