@@ -10,7 +10,7 @@ import random
 import subprocess
 from delete_cache import delete_cache
 from gencapcha import slide_captcha
-from find_text import get_element,get_coordinates_capcha,find_coordinates_friend
+from find_text import get_element,get_coordinates_capcha,find_coordinates_friend,findmember
 from btnback import back
 from swip import swip
 from killapp import kill_and_restart_app
@@ -142,12 +142,10 @@ def swip_newfeed(device,min_number,max_number,number_action):
                 sleep(4)
             else:
                 swip(device, 516, 1676, 536, 569)
-        print('oke')
 def post1(device, min_number, max_number, content,file_list):
         for file_path in file_list:
             current_timestamp = time.mktime(datetime.now().timetuple())
 
-            # Thay đổi ngày sửa đổi của tệp thành thời gian hiện tại
             os.utime(file_path, (current_timestamp, current_timestamp))
 
             file_name = os.path.basename(file_path)
@@ -168,7 +166,7 @@ def post1(device, min_number, max_number, content,file_list):
         center_x,center_y=findElementById(device,'com.zing.zalo:id/media_picker_layout')
         tap(device,center_x,center_y)
         sleep(5)
-def post2(device, min_number, max_number, content,file_list):
+def post2(device, min_number, max_number,file_list):
         for file_path in file_list:
             # Lấy thời gian hiện tại dưới dạng timestamp
             current_timestamp = time.mktime(datetime.now().timetuple())
@@ -331,7 +329,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
             file_list = file.split()
         else:
             file_list = file
-        if(type=='Nhắn tin theo số điện thoại'):
+        if(type=='Theo SĐT'):
             center_x,center_y =findElementById(device,'com.zing.zalo:id/maintab_message')
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
@@ -403,7 +401,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
             back(device)
             sleep(2)
             
-        elif type =='Nhắn tin vào hội nhóm':
+        elif type =='Nhóm':
             center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
             tap(device, center_x, center_y)
             center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
@@ -420,7 +418,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     tap(device,center_x, center_y)
                     sleep(random.randint(min_number, max_number))
                     if len(file_list)>0:
-                        post2(device, min_number, max_number, content,file_list)
+                        post2(device, min_number, max_number,file_list)
                         for i in range(len(file_list)):
                             center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
                             if(center_x==0 and center_y==0):
@@ -435,6 +433,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                         sleep(random.randint(min_number, max_number))
                     center_x, center_y = find_image_coordinates('assets/images/meesage.png', device, device.serial)
                     tap(device,center_x, center_y)
+                    sleep(random.randint(min_number, max_number))
                     input_text(device,text=content)
                     sleep(random.randint(min_number, max_number))
                     center_x, center_y = find_image_coordinates('assets/images/sent.png', device, device.serial)
@@ -442,7 +441,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     sleep(random.randint(min_number, max_number))
                     i+=1
                     back(device)
-        elif type =='Nhắn tin bạn bè':      
+        elif type =='Bạn bè':
             center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
             tap(device, center_x, center_y)
             center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
@@ -493,10 +492,23 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                 else:
                     break
             os.remove(filepath)
-      
+        elif type =='Thành viên nhóm':
+            # center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
+            # tap(device, center_x, center_y)
+            # sleep(random.randint(min_number, max_number))
+            # while True:
+            #     swip(device,500,1543,500,1253)
+            #     center_x, center_y = find_image_coordinates('assets/images/viewmember.png', device, device.serial)
+            #     if center_x>0 and center_y>0:
+            #         tap(device, center_x, center_y)
+            #         break
+            # center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
+            findmember(device)
 
-            
+                
+
                     
+                
 def comment_post(device,min_number,max_number,number_action,content,love):
     center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
     tap(device, center_x, center_y)
@@ -534,6 +546,15 @@ def comment_post(device,min_number,max_number,number_action,content,love):
             swip(device, 690, 1722, 536, 410)
         else:
             swip(device, 516, 1676, 536, 410)
+def invite_join_the_group(device,min_number,max_number):
+    center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
+    tap(device, center_x, center_y)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+    tap(device, center_x, center_y)
+    sleep(random.randint(min_number, max_number))
+    center_x, center_y = find_image_coordinates('assets/images/select_group.png', device, device.serial)
+    tap(device, center_x, center_y)
+    
 def login(device,account_info):
     delete_cache(device,"com.zing.zalo")
     sleep(random.randint(5,10))

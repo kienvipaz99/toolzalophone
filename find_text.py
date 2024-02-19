@@ -4,6 +4,8 @@ import os
 import subprocess
 import hashlib
 from readingfile import check_xml_data
+from tab import tap
+import random
 def dumpXml(serial: str):
     srdev = serial
 
@@ -124,3 +126,39 @@ def find_coordinates_friend(serial, id_value):
                         return Xpoint, Ypoint
 
     return 0, 0  
+def findmember(device):
+    dumpXml(device.serial)
+    filename = "member_texts.txt"
+    filepath = os.path.join(os.getcwd(), filename)
+    pattern = re.compile(r"\d+")
+    xml_path = os.path.join(os.getcwd(), hashlib.md5(device.serial.encode('utf-8-sig')).hexdigest(), "ui.xml")
+    tree = ET.parse(xml_path)
+    
+    # if not os.path.exists(filepath):
+    #     open(filepath, "a").close()
+
+    root = tree.getroot()
+    members = root.findall(".//node[@class='android.widget.FrameLayout']")
+    # with open(filepath, "r") as file:
+    #     existing_entries = file.read().splitlines()
+    data_member=[]
+    for member in members:
+        text_value = member.attrib.get("text", "").strip()
+        if text_value and "Trưởng nhóm" not in text_value and "Phó nhóm" not in text_value and "Bạn" not in text_value and "Thành viên" not in text_value:
+            bounds = member.attrib["bounds"]
+            coord = pattern.findall(bounds)
+            Xpoint = int((int(coord[2]) + int(coord[0])) / 2)
+            Ypoint = int((int(coord[3]) + int(coord[1])) / 2)
+            new_text = text_value.split("\n", 1)[0]
+            coordinates = [new_text,Xpoint,Ypoint]
+            data_member.append(coordinates)
+    random_item = random.choice(data_member)
+    tap(device, random_item[1], random_item[2])   
+        
+            # if coordinates not in existing_entries:
+            #     with open(filepath, "a") as file:
+            #         file.write(coordinates + "\n")
+                
+
+            
+            
