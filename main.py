@@ -113,11 +113,11 @@ class DashboardScreen(CTk):
             print(f'Hành động không xác định: {action_name}')
 
     def process_device(self,device,account_info,data):
-        # if not check_key_board(device.serial, "com.android.adbkeyboard"):
-        #     subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
-        #     sleep(10)
-        # ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
-        # os.system(ime_command)
+        if not check_key_board(device.serial, "com.android.adbkeyboard"):
+            subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
+            sleep(10)
+        ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
+        os.system(ime_command)
         # if(self.checkLogin.get()==1):
         #     login(device,account_info)
         # else:

@@ -36,23 +36,53 @@
 import subprocess
 import cv2
 import numpy as np
-def find_image_coordinates(image_path, device, name_image, threshold=0.99):
+import pytesseract
+def find_image_coordinates(image_path, device):
+    threshold=0.99
     screenshot_bytes = subprocess.check_output(['adb', '-s', device.serial, 'shell', 'screencap', '-p'])
     screenshot_np = cv2.imdecode(np.frombuffer(screenshot_bytes, np.uint8), cv2.IMREAD_COLOR)
-
     template = cv2.imread(image_path)
     screenshot_gray = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
     template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    
     result = cv2.matchTemplate(screenshot_gray, template_gray, cv2.TM_CCOEFF_NORMED)
     _, max_val, _, max_loc = cv2.minMaxLoc(result)
-
     if max_val < threshold:
         return 0, 0
-
     x, y = max_loc
     template_height, template_width = template_gray.shape
     center_x = x + template_width // 2
     center_y = y + template_height // 2
-    
     return center_x, center_y
+def readimage(device,image_path):
+    screenshot_bytes = subprocess.check_output(['adb', '-s', device.serial, 'shell', 'screencap', '-p'])
+    screenshot_np = cv2.imdecode(np.frombuffer(screenshot_bytes, np.uint8), cv2.IMREAD_COLOR)
+    template = cv2.imread(image_path)
+    screenshot_gray = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
+    template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    result = cv2.matchTemplate(screenshot_gray, template_gray, cv2.TM_CCOEFF_NORMED)
+    _, max_val, _, max_loc = cv2.minMaxLoc(result)
+    x, y = max_loc
+    template_height, template_width = template_gray.shape
+
+    x1 = x
+    x2 = x + template_width+200
+    y1 = y
+    y2 = y + template_height
+
+    cropped_img = screenshot_np[y1:y2, x1:x2]
+
+    # Chuyển đổi ảnh sang không gian màu HSV
+    hsv = cv2.cvtColor(cropped_img, cv2.COLOR_BGR2HSV)
+    lower_bound = np.array([0, 0, 175])
+    upper_bound = np.array([179, 255, 255])
+    msk = cv2.inRange(hsv, lower_bound, upper_bound)
+    
+    # Phóng to vùng mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
+    dilated = cv2.dilate(msk, kernel, iterations=1)
+    thresholded = 255 - cv2.bitwise_and(dilated, msk)
+
+    # Sử dụng OCR để nhận dạng văn bản
+    extracted_text = pytesseract.image_to_string(thresholded, config="--psm 10")
+    so = extracted_text[extracted_text.find('(') + 1:extracted_text.find(')')]
+    return so

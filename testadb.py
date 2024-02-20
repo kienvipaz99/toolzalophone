@@ -1,16 +1,15 @@
 from ppadb.client import Client as AdbClient
 from openapp import openapp
 from time import sleep
-from find_image import find_image_coordinates
+from find_image import find_image_coordinates,readimage
 from input import input_text
 from tab import tap
-from key_event import key_event
 import os
 import random
 import subprocess
 from delete_cache import delete_cache
 from gencapcha import slide_captcha
-from find_text import get_element,get_coordinates_capcha,find_coordinates_friend,findmember
+from find_text import get_coordinates_capcha,find_coordinates_friend,findmember,findElementById,findElementByName
 from btnback import back
 from swip import swip
 from killapp import kill_and_restart_app
@@ -28,27 +27,18 @@ def get_devices():
     except:
        return []
         
-filename = "captured_texts.txt"
-filepath = os.path.join(os.getcwd(), filename)
+
 def check_key_board(device_serial, package_name):
     result = subprocess.run(['adb', '-s', device_serial, 'shell', 'pm', 'list', 'packages', package_name], capture_output=True, text=True)
     return package_name in result.stdout
-def findElementByName(device, name):
-     center_x,center_y=get_element(device.serial,'text',name)
-     return center_x,center_y
-def findElementById(device, id):
-    center_x,center_y=get_element(device.serial,"resource-id",id)
-    return center_x,center_y
-def findElementByClass(device, className):
-    center_x,center_y=get_element(device.serial,"class",className)
-    return center_x,center_y
+
 
 def add_friend_numberphone(device, mins, max, maxaction, data, type):
     center_x,center_y =findElementById(device,'com.zing.zalo:id/maintab_message')
     tap(device, center_x, center_y)
     sleep(random.randint(mins, max))
     if(type == 'Kết bạn theo sđt'):
-        center_x, center_y = find_image_coordinates('assets/images/find_friend.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/find_friend.png', device)
         tap(device, center_x, center_y)
         sleep(random.randint(mins, max))
         data_phone = str(data).split()
@@ -97,11 +87,11 @@ def add_friend_numberphone(device, mins, max, maxaction, data, type):
 
     elif(type=='Kết bạn theo gợi ý'):
         while True:
-            x, y = find_image_coordinates('assets/images/find_more.png', device, device.serial)
+            x, y = find_image_coordinates('assets/images/find_more.png', device)
             if x==0 and y==0:
                 swip(device,514,897,535,533)
             else:
-                center_x, center_y = find_image_coordinates('assets/images/viewadd.png', device, device.serial)
+                center_x, center_y = find_image_coordinates('assets/images/viewadd.png', device)
                 tap(device,center_x,center_y)
                 sleep(random.randint(mins,max))
                 
@@ -120,9 +110,9 @@ def add_friend_numberphone(device, mins, max, maxaction, data, type):
         print('Kết bạn trong nhóm(trừ trưởng ,phó nhóm)')
     #Lướt New feed
 def swip_newfeed(device,min_number,max_number,number_action):
-        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device)
         tap(device, center_x, center_y)
-        center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device)
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
         actions_performed = 0 
@@ -134,7 +124,7 @@ def swip_newfeed(device,min_number,max_number,number_action):
             center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
             if(center_x>0 and center_y>0):
                 break
-            center_x, center_y = find_image_coordinates('assets/images/love.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/love.png', device)
             if center_x > 0 and center_y > 0:
                 tap(device, center_x, center_y)
                 actions_performed += 1 
@@ -183,17 +173,17 @@ def post2(device, min_number, max_number,file_list):
             # Kích hoạt trình quét media
             subprocess.run(['adb', '-s', device.serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', f'file://{destination_path}'], capture_output=True)
             
-        center_x, center_y = find_image_coordinates('assets/images/library.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/library.png', device)
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
-        center_x, center_y = find_image_coordinates('assets/images/allow_access.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/allow_access.png', device)
         if center_x >0 and center_y >0:
             tap(device,center_x,center_y)
             sleep(random.randint(min_number, max_number))
-            center_x, center_y = find_image_coordinates('assets/images/access.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/access.png', device)
             tap(device,center_x,center_y)
-        center_x,center_y=find_image_coordinates(device,'take_a_ photo.png')
-        tap(device,center_x,center_y+200)
+        center_x,center_y=findElementById(device,'com.zing.zalo:id/media_picker_layout')
+        tap(device,center_x,center_y)
         sleep(5)
         # Đăng bài
 def post(device, min_number, max_number, content, files):
@@ -201,9 +191,9 @@ def post(device, min_number, max_number, content, files):
             file_list = files.split()
         else:
             file_list = files
-        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device)
         tap(device, center_x, center_y)
-        center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device, device.serial)
+        center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device)
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
         center_x,center_y=findElementById(device,'com.zing.zalo:id/action_bar_new_post_btn')
@@ -213,7 +203,7 @@ def post(device, min_number, max_number, content, files):
             post1(device, min_number, max_number, content,file_list)
             action=0
             while action < len(file_list):
-                center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
+                center_x, center_y = find_image_coordinates('assets/images/select_image.png', device)
                 if center_x==0 and center_y==0: 
                     tap(device,450, 450)
                     sleep(2)
@@ -223,7 +213,7 @@ def post(device, min_number, max_number, content, files):
                     sleep(2)
                     action+=1
 
-            center_x, center_y = find_image_coordinates('assets/images/comfirm_image.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/comfirm_image.png', device)
             tap(device,center_x,center_y)
             sleep(random.randint(min_number, max_number))
         center_x,center_y=findElementById(device,'com.zing.zalo:id/etDesc')
@@ -235,9 +225,9 @@ def post(device, min_number, max_number, content, files):
         tap(device,center_x,center_y)
         #Đồng ý kết bạn
 def agree_to_make_friends(device,min_number,max_number,number_action,type):
-    center_x, center_y = find_image_coordinates('assets/images/danhba.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/danhba.png', device)
     tap(device,center_x, center_y)
-    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
     tap(device,center_x, center_y)
     sleep(random.randint(min_number, max_number))
     center_x,center_y=findElementById(device,'com.zing.zalo:id/tvFriendRequest')
@@ -279,9 +269,9 @@ def agree_to_make_friends(device,min_number,max_number,number_action,type):
             back(device)
 #Huỷ kết bạn
 def unfriend(device,min_number,max_number,number_action,type):
-    center_x, center_y = find_image_coordinates('assets/images/danhba.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/danhba.png', device)
     tap(device,center_x, center_y)
-    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
     sleep(random.randint(min_number, max_number))
     center_x,center_y=findElementById(device,'com.zing.zalo:id/tvFriendRequest')
     tap(device,center_x, center_y)
@@ -292,11 +282,11 @@ def unfriend(device,min_number,max_number,number_action,type):
     if(type =='Thu hồi theo số lượng'):
             action=0 
             while action < number_action:
-                    center_x, center_y = find_image_coordinates('assets/images/recall.png', device, device.serial)
+                    center_x, center_y = find_image_coordinates('assets/images/recall.png', device)
                     if center_x >0 and center_y>0:
                         tap(device,center_x, center_y)
                         sleep(2)
-                        x, y = find_image_coordinates('assets/images/wanning.png', device, device.serial)
+                        x, y = find_image_coordinates('assets/images/wanning.png', device)
                         
                         if x>0 and y>0:
                             break
@@ -310,11 +300,11 @@ def unfriend(device,min_number,max_number,number_action,type):
        
     elif type == 'Thu hồi tất cả':
             while True:       
-                    center_x, center_y = find_image_coordinates('assets/images/recall.png', device, device.serial) 
+                    center_x, center_y = find_image_coordinates('assets/images/recall.png', device) 
                     if center_x >0 and center_y>0:
                         tap(device,center_x, center_y)
                         sleep(2)
-                        x, y = find_image_coordinates('assets/images/wanning.png', device, device.serial)
+                        x, y = find_image_coordinates('assets/images/wanning.png', device)
                         if x>0 and y>0:
                             break
                         sleep(random.randint(min_number, max_number))
@@ -333,7 +323,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
             center_x,center_y =findElementById(device,'com.zing.zalo:id/maintab_message')
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
-            center_x, center_y = find_image_coordinates('assets/images/find_friend.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/find_friend.png', device)
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
             data_phone = str(data_number).split()
@@ -402,52 +392,72 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
             sleep(2)
             
         elif type =='Nhóm':
-            center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
+            center_x,center_y =find_image_coordinates('assets/images/danhba.png',device)
             tap(device, center_x, center_y)
-            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
-            center_x, center_y = find_image_coordinates('assets/images/select_group.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/select_group.png', device)
             tap(device, center_x, center_y)
-            center_x, center_y = find_image_coordinates('assets/images/zerogroup.png', device, device.serial)
+            group=readimage(device,'assets/images/group.png')
+            center_x, center_y = find_image_coordinates('assets/images/zerogroup.png', device)
             if center_x==0 and center_y==0:
-                center_x, center_y = find_image_coordinates('assets/images/group.png', device, device.serial)
                 i=0
-                while i< max_number:
-                    swip(device, 363, 1400, 360, 1150)
-                    tap(device,center_x, center_y)
-                    sleep(random.randint(min_number, max_number))
-                    if len(file_list)>0:
-                        post2(device, min_number, max_number,file_list)
-                        for i in range(len(file_list)):
-                            center_x, center_y = find_image_coordinates('assets/images/select_image.png', device, device.serial)
-                            if(center_x==0 and center_y==0):
-                                tap(device,450, 450)
-                                sleep(2)
-                            if center_x>0 and center_y>0:
-                                tap(device,center_x, center_y)
-                                swip(device, 985, 1064, 55, 1171)
-                                sleep(2)
-                        center_x, center_y = find_image_coordinates('assets/images/sent_image.png', device, device.serial)
+                action = min(int(number_action), int(group))
+                center_x, center_y = find_image_coordinates('assets/images/group.png', device)
+                coordinates=center_y
+                while i< action:
+                    if i < 3:
+                        coordinates += 200
+                        tap(device, center_x,coordinates)
+                        sleep(random.randint(min_number, max_number))
+                    else:
+                        tap(device, center_x, coordinates)
+                        sleep(random.randint(min_number, max_number))
+                    x,y=findElementByName(device,'Chỉ trưởng và phó nhóm được gửi tin nhắn vào nhóm. Tìm hiểu thêm ')
+                    print(x,y)
+                    if(x>0 and y>0):
+                        i+=1
+                        back(device)
+                        sleep(random.randint(min_number, max_number))
+                    else:
+                        if len(file_list)>0:
+                            post2(device, min_number, max_number,file_list)
+                            for i in range(len(file_list)):
+                                center_x, center_y = find_image_coordinates('assets/images/select_image.png', device)
+                                if(center_x==0 and center_y==0):
+                                    tap(device,450, 450)
+                                    sleep(2)
+                                if center_x>0 and center_y>0:
+                                    tap(device,center_x, center_y)
+                                    swip(device, 985, 1064, 55, 1171)
+                                    sleep(2)
+                            center_x, center_y = find_image_coordinates('assets/images/sent_image.png', device)
+                            tap(device,center_x, center_y)
+                            sleep(random.randint(min_number, max_number))
+                        center_x, center_y = find_image_coordinates('assets/images/meesage.png', device)
                         tap(device,center_x, center_y)
                         sleep(random.randint(min_number, max_number))
-                    center_x, center_y = find_image_coordinates('assets/images/meesage.png', device, device.serial)
-                    tap(device,center_x, center_y)
-                    sleep(random.randint(min_number, max_number))
-                    input_text(device,text=content)
-                    sleep(random.randint(min_number, max_number))
-                    center_x, center_y = find_image_coordinates('assets/images/sent.png', device, device.serial)
-                    tap(device,center_x, center_y)
-                    sleep(random.randint(min_number, max_number))
-                    i+=1
-                    back(device)
+                        input_text(device,text=content)
+                        sleep(random.randint(min_number, max_number))
+                        center_x, center_y = find_image_coordinates('assets/images/sent.png', device)
+                        tap(device,center_x, center_y)
+                        sleep(random.randint(min_number, max_number))
+                        i+=1
+                        back(device)
+                    if(i>2):
+                        swip(device, 363, 1400, 360, 1150)
+                        sleep(2)
+                        # back(device)
+       
+                    
         elif type =='Bạn bè':
-            center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
+            center_x,center_y =find_image_coordinates('assets/images/danhba.png',device)
             tap(device, center_x, center_y)
-            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
-            center_x,center_y =find_image_coordinates('assets/images/friend.png',device,device.serial)
+            center_x,center_y =find_image_coordinates('assets/images/friend.png',device)
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
             i=0
@@ -491,28 +501,53 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     swip(device,500,1543,500,1253)
                 else:
                     break
-            os.remove(filepath)
+            os.remove(f"{device.serial}captured_texts.txt")
         elif type =='Thành viên nhóm':
-            # center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
-            # tap(device, center_x, center_y)
-            # sleep(random.randint(min_number, max_number))
-            # while True:
-            #     swip(device,500,1543,500,1253)
-            #     center_x, center_y = find_image_coordinates('assets/images/viewmember.png', device, device.serial)
-            #     if center_x>0 and center_y>0:
-            #         tap(device, center_x, center_y)
-            #         break
-            # center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
-            findmember(device)
-
-                
-
-                    
-                
+            center_x,center_y =find_image_coordinates('assets/images/danhba.png',device)
+            tap(device, center_x, center_y)
+            center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
+            tap(device, center_x, center_y)
+            sleep(random.randint(min_number, max_number))
+            center_x, center_y = find_image_coordinates('assets/images/select_group.png', device)
+            tap(device, center_x, center_y)
+            group=readimage(device,'assets/images/group.png')
+            center_x, center_y = find_image_coordinates('assets/images/zerogroup.png', device)
+            if center_x==0 and center_y==0:
+                center_x, center_y = find_image_coordinates('assets/images/group.png', device)
+                i=0
+                coordinates=center_y
+                action = min(int(number_action), int(group))
+                while i< action:
+                    if i < 3:
+                        coordinates += 200
+                        tap(device, center_x, coordinates)
+                        sleep(random.randint(min_number, max_number))
+                        
+                    else:
+                        tap(device, center_x, coordinates)
+                        sleep(random.randint(min_number, max_number))
+            center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
+            tap(device, center_x, center_y)
+            sleep(random.randint(min_number, max_number))
+            while True:
+                swip(device,500,1543,500,1253)
+                center_x, center_y = find_image_coordinates('assets/images/viewmember.png', device)
+                if center_x>0 and center_y>0:
+                    tap(device, center_x, center_y)
+                    break
+            center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
+            click=0
+            while click<1:
+                status=findmember(device,min_number,max_number,content,file_list)
+                if(status=='oke'):
+                    break
+                else:
+                    click+=1
+            os.remove("{device.serial}member.txt")
 def comment_post(device,min_number,max_number,number_action,content,love):
-    center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device)
     tap(device, center_x, center_y)
-    center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/newfeed1.png', device)
     tap(device, center_x, center_y)
     sleep(random.randint(min_number, max_number))
     i=0
@@ -527,7 +562,7 @@ def comment_post(device,min_number,max_number,number_action,content,love):
         x,y=findElementById(device,'com.zing.zalo:id/btn_comment')
         if (center_x > 0 and center_y > 0) or(x>0 and y>0) :
             if love:
-                timx, timy = find_image_coordinates('assets/images/love.png', device, device.serial)
+                timx, timy = find_image_coordinates('assets/images/love.png', device)
                 tap(device, timx, timy)
             tap(device, center_x, center_y)
             tap(device, x, y)
@@ -547,12 +582,12 @@ def comment_post(device,min_number,max_number,number_action,content,love):
         else:
             swip(device, 516, 1676, 536, 410)
 def invite_join_the_group(device,min_number,max_number):
-    center_x,center_y =find_image_coordinates('assets/images/danhba.png',device,device.serial)
+    center_x,center_y =find_image_coordinates('assets/images/danhba.png',device)
     tap(device, center_x, center_y)
-    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/danhba1.png', device)
     tap(device, center_x, center_y)
     sleep(random.randint(min_number, max_number))
-    center_x, center_y = find_image_coordinates('assets/images/select_group.png', device, device.serial)
+    center_x, center_y = find_image_coordinates('assets/images/select_group.png', device)
     tap(device, center_x, center_y)
     
 def login(device,account_info):
@@ -579,20 +614,20 @@ def login(device,account_info):
     sleep(random.randint(2,5))
     input_text(device,text=account_info[2])
     sleep(random.randint(2,5))
-    center_x,center_y=get_element(device.serial,'resource-id','com.zing.zalo:id/btnLogin')
+    center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
     tap(device,center_x,center_y)
     sleep(random.randint(15,20))
     while True:
         center_x,center_y=findElementByName(device,'Xác thực bằng Captcha')
         if center_x==0 and center_y==0:
-            x,y=get_element(device.serial,'resource-id','com.zing.zalo:id/btnLogin')
+            x,y=findElementById(device,'com.zing.zalo:id/btnLogin')
             if x==0 and y==0:
                
                 break
             else:
                 tap(device,x,y)
         else:
-         center_x, center_y = get_element(device.serial,'resource-id','track_btn')
+         center_x, center_y = findElementById(device,'track_btn')
          so,so2,so3,so4=get_coordinates_capcha(device.serial,"resource-id",'sd_bg')
          slide_captcha(device, center_x, center_y,so,so2,so3,so4)
          sleep(5)
