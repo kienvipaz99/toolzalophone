@@ -10,7 +10,8 @@ import tkinter.messagebox
 import threading,time,subprocess
 from  killapp import kill_and_restart_app
 from time import sleep
-from testadb import get_devices,login,add_friend_numberphone,swip_newfeed,post,check_key_board,agree_to_make_friends,unfriend,sent_messages,comment_post,invite_join_the_group
+from testadb import get_devices,login,add_friend_numberphone,swip_newfeed,post,check_key_board,agree_to_make_friends,unfriend,sent_messages,comment_post,invite_join_group
+from changeproxy import thayDoiProxy
 def get_device_imei(device):
     result = device.shell("service call iphonesubinfo 1 s16 com.android.shell  | cut -d \"'\" -f2 | grep -Eo '[0-9]' | xargs | sed 's/ //g'")
     imei = result.strip()
@@ -60,6 +61,7 @@ cursor.execute('''
         datalist_phone TEXT,
         divided BOOLEAN,
         love BOOLEAN,
+        group_link TEXT,
         FOREIGN KEY (timeline_id) REFERENCES timeline (id)
     )
 ''')
@@ -93,6 +95,8 @@ class DashboardScreen(CTk):
         content=item[7]
         file=item[9]
         love=item[12]
+        divided=item[11]
+        group_link=item[13]
         if action_name == 'Thêm bạn bè':
             add_friend_numberphone(device,min_number,max_number,number_action,data_number,type)
         elif action_name == 'Lướt new feed':
@@ -104,20 +108,20 @@ class DashboardScreen(CTk):
         elif action_name=='Thu hồi kết bạn':
             unfriend(device,min_number,max_number,number_action,type)
         elif action_name=='Nhắn tin':
-            sent_messages(device,min_number,max_number,content,number_action,file,type,data_number,id)
+            sent_messages(device,min_number,max_number,content,number_action,file,type,data_number,id,divided,group_link)
         elif action_name=='Bình luận bài viết':
             comment_post(device,min_number,max_number,number_action,content,love)
         elif action_name=='Mời tham gia nhóm':
-            invite_join_the_group(device,min_number,max_number,type,)
+            invite_join_group(device,min_number,max_number,number_action,type,group_link,data_number)
         else:
             print(f'Hành động không xác định: {action_name}')
 
     def process_device(self,device,account_info,data):
-        if not check_key_board(device.serial, "com.android.adbkeyboard"):
-            subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
-            sleep(10)
-        ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
-        os.system(ime_command)
+        # if not check_key_board(device.serial, "com.android.adbkeyboard"):
+        #     subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
+        #     sleep(10)
+        # ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
+        # os.system(ime_command)
         # if(self.checkLogin.get()==1):
         #     login(device,account_info)
         # else:
@@ -125,6 +129,8 @@ class DashboardScreen(CTk):
         # time.sleep(3)
         for item in data:
             action_name = item[2]
+            
+            
             self.perform_action(device,action_name,item)
     def get_accounts_data1(self):
         conn_account = sqlite3.connect("database/account.db")
@@ -157,6 +163,7 @@ class DashboardScreen(CTk):
                 for index, device in enumerate(devices):
                     account_index = index * logins_per_device % num_accounts
                     account_info = accounts[account_index]
+                    
                     thread = threading.Thread(target=self.process_device, args=(device, account_info,data))
                     threads.append(thread)
                     thread.start()
@@ -170,6 +177,10 @@ class DashboardScreen(CTk):
             self.thread.start()
         else:
             print("Đã bắt đầu.")
+    def stop_action(self):
+        self.stop_flag = True
+        if self.thread is not None and self.thread.is_alive():
+            self.thread.join()
     def create_dashboard_frame(self):
         self.frame_width = self.root.winfo_screenwidth()
         self.frame_height = self.root.winfo_screenheight()
@@ -297,14 +308,17 @@ class DashboardScreen(CTk):
                         conn_account.commit()
                         
                     load_data()
+                    
                 except Exception as e:
-                    tkinter.messagebox.showerror("Lỗi", e)
+                    tkinter.messagebox.showerror("Lỗi", "Lưu ý tải file tài khoản lên tài khoản ngăn cách với mật khẩu bằng dấu | ví dụ(tk|mk) và mỗi nick xuống dòng 1 lần")
+
             btn_them = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Thêm', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command=them_du_lieu)
             btn_them.pack(anchor='c',pady=(20,0))
             btn_them_file = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Thêm từ file', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command= add_file_text)
             btn_them_file.pack(anchor='c',pady=(20,0))
             btn_xoa = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Xóa', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command=delete_account)
             btn_xoa.pack(anchor='c',pady=(20,0))
+
             load_data()
         elif loai_man_hinh == "Hành động":
             def fetch_data():
@@ -315,7 +329,6 @@ class DashboardScreen(CTk):
             img_pen = CTkImage(light_image=img_pen, size=(20, 20))
             img_bin = Image.open('assets/iconapp/bin.png')
             img_bin = CTkImage(light_image=img_bin, size=(20, 20))
-            
             def load_data1():
                 data = fetch_data()
                 for row_index, row_data in enumerate(data, start=1):
@@ -354,6 +367,8 @@ class DashboardScreen(CTk):
                     sent_message_window(row)        
                 elif name_table=='Bình luận bài viết':
                     open_window_comment(row)
+                elif name_table=='Mời tham gia nhóm':
+                    invite_group_window(row)
             def clear_table_frame(keep_header=True):
                 start_index = 3 if keep_header else 0
                 for widget in table_frame.winfo_children()[start_index:]:
@@ -403,18 +418,21 @@ class DashboardScreen(CTk):
                             my_frame.no_action_label.destroy()
                         checkbox=CTkCheckBox(farme2,text='Đăng nhập',variable=self.checkLogin,text_color="black",fg_color='#114AA0')
                         checkbox.pack(side='top', anchor='w', padx=10,pady=10)
-
                         start_button = CTkButton(farme2, text='Bắt đầu',text_color='white',font=font_text,fg_color='#114AA0', height=40, command=self.start_action)
-                        start_button.pack(side='bottom', anchor='w', padx=10)
-
+                        start_button.pack(side='left', anchor='w', padx=(0,10))
+                        stop_button = CTkButton(farme2, text='Dừng',text_color='white',font=font_text,fg_color='#114AA0', height=40, command=self.stop_action)
+                        stop_button.pack(side='right', anchor='w', padx=10)
                         if hasattr(farme2, "checkbox"):
                             if farme2.checkbox.winfo_exists():
                                 farme2.checkbox.destroy()
                         farme2.checkbox = checkbox
 
                         if hasattr(farme2, "start_button"):
-                            farme2.start_button.destroy()
+                            farme2.start_button.destroy() 
                         farme2.start_button = start_button
+                        if hasattr(farme2, "stop_button"):
+                            farme2.stop_button.destroy() 
+                        farme2.stop_button = stop_button
                 else:
                         no_action_label = CTkLabel(farme2, text='Không tìm thấy hành động.',text_color="black")
                         no_action_label.pack(side='top', padx=20, pady=10, anchor='n')
@@ -423,6 +441,8 @@ class DashboardScreen(CTk):
                         my_frame.no_action_label = no_action_label 
                         if hasattr(farme2, "start_button"):
                             farme2.start_button.destroy()
+                        if hasattr(farme2, "stop_button"):
+                            farme2.stop_button.destroy() 
                         if hasattr(farme2, "checkbox"):
                             if farme2.checkbox.winfo_exists():
                                 farme2.checkbox.destroy()
@@ -578,7 +598,7 @@ class DashboardScreen(CTk):
                         input_max_friend = CTkEntry(frame, placeholder_text='Nhập số lượng kết bạn', text_color='black',fg_color='white', font=font_text, width=window_width*0.9, height=40)
                         input_max_friend.pack(fill='x', side='top')
                         CTkLabel(frame, text='Kết bạn từ', text_color='black', font=font_text).pack(side='top', anchor='w')
-                        item_auto=['Kết bạn theo sđt','Kết bạn theo gợi ý','Kết bạn trong nhóm(trừ trưởng ,phó nhóm)']
+                        item_auto=['Kết bạn theo sđt','Kết bạn theo gợi ý']
                         selected_item_auto = StringVar(value='Kết bạn theo sđt')
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5)
@@ -597,7 +617,6 @@ class DashboardScreen(CTk):
                                 input_phone.pack_forget()
                                 label_input_phone.pack_forget()
                                 check_number.pack_forget()
-                        check()
                         if data is not None:
                             min=data[3]
                             max=data[4]
@@ -611,6 +630,8 @@ class DashboardScreen(CTk):
                             input_max_friend.insert(0,maxnumber)
                             input_phone.insert("0.0", data_phone)
                             self.checkDivided1.set(divided)
+                        check()
+
                         def add_data():
                             try:
                                 id=self.selected_value.get()    
@@ -699,7 +720,11 @@ class DashboardScreen(CTk):
                         text_6 = CTkLabel(frame, text='Danh sách số điện thoại(mỗi số 1 dòng)', text_color='black', font=font_text)
                         input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
-                        check_number=CTkCheckBox(frame,text='Chia đều sđt cho thiết bị',fg_color='#114AA0',font=font_text,text_color='black',variable=self.checkDivided2)
+                        text_7 = CTkLabel(frame, text='Danh sách link nhóm', text_color='black', font=font_text)
+                        input_link=CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        CTkScrollbar(frame,command=input_link.yview)
+                        check_number=CTkCheckBox(frame,text='Kết bạn nếu chưa là bạn bè',fg_color='#114AA0',font=font_text,text_color='black',variable=self.checkDivided2)
+                        check_number.pack(side='top', anchor='w',pady=5)
                         def open_file_dialog(label):
                             file_paths = filedialog.askopenfilenames(title="Chọn tệp", filetypes=[("Ảnh", ("*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"))])
     
@@ -710,7 +735,6 @@ class DashboardScreen(CTk):
                                     valid_image_paths.append(file_path)
                                 except (IOError, Image.DecompressionBombError):
                                     pass
-
                             if valid_image_paths:
                                 label.configure(text="\n".join(valid_image_paths))
                             else:
@@ -720,14 +744,19 @@ class DashboardScreen(CTk):
                             if selected_item_auto.get() == 'Theo SĐT':
                                     text_6.pack(side='top', anchor='w')
                                     input_phone.pack(side='top', anchor='w',pady=5)
-                                    check_number.pack(side='top', anchor='w',pady=5)
+                                    
                             else:
                                 text_6.pack_forget()
                                 input_phone.pack_forget()
-                                check_number.pack_forget()
+                            if selected_item_auto.get() == 'Nhóm' or selected_item_auto.get() == 'Thành viên nhóm':
+                                text_7.pack(side='top', anchor='w')
+                                input_link.pack(side='top', anchor='w',pady=5)
+                                    
+                            else:
+                                text_7.pack_forget()
+                                input_link.pack_forget()
                         for item in item_auto:
-                            tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,background='#f0f0f0',font=("Adobe Kaiti Std R", 12),value=item,variable=selected_item_auto,command=toggle_input_max).pack(side='left', anchor='w')  
-                        toggle_input_max()
+                            tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,background='#f0f0f0',font=("Adobe Kaiti Std R", 12),value=item,variable=selected_item_auto,command=toggle_input_max).pack(side='left', anchor='w')
                         if data is not None:
                             min=data[3]
                             max=data[4]
@@ -737,15 +766,17 @@ class DashboardScreen(CTk):
                             maxnumber=data[5]
                             datalist_phone=data[10]
                             divided=data[11]
+                            group_link=data[13]
                             input_min.insert(0,min)
                             input_max.insert(0,max)
                             input_max_message.insert(0,maxnumber)
                             input_content.insert("0.0",content)
                             label_file_path.configure(text=file_path)
                             input_phone.insert("0.0",datalist_phone)
+                            input_link.insert("0.0",group_link)
                             selected_item_auto.set(value=types)
                             self.checkDivided2.set(divided)
-                            
+                        toggle_input_max()
                         def save_sent_message():
                             try:
                                 id=self.selected_value.get()    
@@ -755,22 +786,24 @@ class DashboardScreen(CTk):
                                 content=input_content.get("1.0", "end-1c")
                                 auto=selected_item_auto.get()
                                 datalist_phone=input_phone.get("1.0", "end-1c")
+                                link_group=input_link.get("1.0", "end-1c")
                                 file_path = label_file_path.cget("text")
+                                
                                 self.checkDivided2.get()
                                 if data is not None:
-                                    id_item=data[0]
+                                    id_item = data[0]
                                     cursor.execute('''
-                                                        UPDATE action
-                                                        SET time_min = ?, time_max = ?,
-                                                        quantity =? ,  
-                                                        content = ?,file_path=?, type=?,datalist_phone= ? , divided= ?
-                                                        WHERE id = ?
-                                                    ''', (delaymin, delaymax,quantity,content,file_path,auto,datalist_phone,self.checkDivided2.get(), id_item))
+                                                    UPDATE action
+                                                    SET time_min = ?, time_max = ?, quantity = ?,  
+                                                    content = ?, file_path = ?, type = ?, datalist_phone = ?, 
+                                                    divided = ?, group_link = ?
+                                                    WHERE id = ?
+                                                ''', (delaymin, delaymax, quantity, content, file_path, auto, datalist_phone, self.checkDivided2.get(), link_group, id_item))
                                 else:
-                                                                    cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content, type, datalist_phone,file_path,divided)
-                                    VALUES (?, 'Nhắn tin', ?, ?, ?, ?, ?, ?,?,?)
-                                    ''', (id, delaymin, delaymax, quantity, content, auto, datalist_phone,file_path,self.checkDivided2.get()))
+                                    cursor.execute('''
+                                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, quantity, content, type, datalist_phone, file_path, divided, group_link)
+                                                    VALUES (?, 'Nhắn tin', ?, ?, ?, ?, ?, ?, ?, ?,?)
+                                                    ''', (id, delaymin, delaymax, quantity, content, auto, datalist_phone, file_path, self.checkDivided2.get(), link_group))
                                 conn.commit()
                                 calldata()
                             except Exception as e:
@@ -1019,6 +1052,7 @@ class DashboardScreen(CTk):
                                 input_max_message.pack(fill='x', side='top',pady=(15,0))
                             else:
                                 input_max_message.pack_forget()
+                            
                         for item in item_auto:
                             tk.Radiobutton(frame_checkbox,text=item,background='#f0f0f0',indicatoron=10,font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=toggle_input_max).pack(side='left', anchor='w')
                         input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt đồng ý', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
@@ -1031,6 +1065,7 @@ class DashboardScreen(CTk):
                             input_max.insert(0,max)
                             selected_item_auto.set(type)
                             input_max_message.insert(0,maxnumber)
+                        toggle_input_max()
                         def save_agree_window():
                             try:
                                 id=self.selected_value.get()    
@@ -1107,14 +1142,24 @@ class DashboardScreen(CTk):
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5)
 
+                        for item in item_auto:
+                            tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,background='#f0f0f0',font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=lambda:toggle_input_max()).pack(side='left', anchor='w')
+                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt thu hồi', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
                         def toggle_input_max():
                             if selected_item_auto.get() == 'Thu hồi theo số lượng':
                                 input_max_message.pack(fill='x', side='top',pady=(15,0))
                             else:
                                 input_max_message.pack_forget()
-                        for item in item_auto:
-                            tk.Radiobutton(frame_checkbox,text=item,indicatoron=10,background='#f0f0f0',font=("Adobe Kaiti Std R", 12),value=item, variable=selected_item_auto, command=toggle_input_max).pack(side='left', anchor='w')
-                        input_max_message = CTkEntry(frame, placeholder_text='Nhập số lượt thu hồi', text_color='black', font=font_text, fg_color='white',width=window_width*0.9, height=40)
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            type=data[6]
+                            maxnumber=data[5]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            selected_item_auto.set(type)
+                            input_max_message.insert(0,maxnumber)
+                        toggle_input_max()
                         def save_unfriend_window():
                             try:
                                 id=self.selected_value.get()    
@@ -1140,20 +1185,12 @@ class DashboardScreen(CTk):
                             except Exception as e:
                                 print("Đã xảy ra lỗi:", e)
                             on_close()
-                        if data is not None:
-                            min=data[3]
-                            max=data[4]
-                            type=data[6]
-                            maxnumber=data[5]
-                            input_min.insert(0,min)
-                            input_max.insert(0,max)
-                            selected_item_auto.set(type)
-                            input_max_message.insert(0,maxnumber)
+
 
 
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_unfriend_window).pack(side='bottom',anchor='n',pady=(20,0))
                         unfriend_window.protocol("WM_DELETE_WINDOW", on_close)   
-            def invite_group_window():
+            def invite_group_window(data=None):
                         global invite_group
                         def toggle_window():
                             if invite_group.state() == "normal":
@@ -1167,7 +1204,6 @@ class DashboardScreen(CTk):
                             global invite_group
                             invite_group.destroy()
                             invite_group = None
-
                         window_width = 500
                         invite_group = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         invite_group.title("Mời tham gia nhóm")
@@ -1192,13 +1228,18 @@ class DashboardScreen(CTk):
                         CTkLabel(frame,text='Số lượng lời mời mỗi tài khoản',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
                         input_max_message = CTkEntry(frame, placeholder_text='Nhập số lời mời tối đa', text_color='black', font=font_text, fg_color='white',width=window_width, height=40)
                         input_max_message.pack(side='top',anchor='n',pady=(0,20),padx=10)
-                        select=['Danh sách sđt',' Danh sách bạn bè','']
+                        CTkLabel(frame,text='Link group',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
+                        input_link=CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
+                        input_link.pack(side='top', anchor='w',pady=5,padx=10)
+                        CTkScrollbar(frame,command=input_link.yview)
+                        select=['Danh sách sđt',' Danh sách bạn bè']
                         selected_item_auto = StringVar(value='Danh sách sđt')
                         CTkLabel(frame,text='Mời theo',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
                         frame_checkbox=CTkFrame(frame)
                         frame_checkbox.pack(side='top', anchor='w',pady=5,fill='y', expand=True)
                         input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
+
                         def toggle_input_max():
                             if selected_item_auto.get() == 'Danh sách sđt':
                                     input_phone.pack(side='top', anchor='w',pady=5,padx=10)
@@ -1207,6 +1248,19 @@ class DashboardScreen(CTk):
                         for item in select:
                             tk.Radiobutton(frame_checkbox,background='#f0f0f0', value=item,text=item,font=font_text,indicatoron=10,variable=selected_item_auto,command=toggle_input_max).pack(side='left',anchor='w',fill='y', expand=True)
                         toggle_input_max()
+                        if data is not None:
+                            min=data[3]
+                            max=data[4]
+                            maxnumber=data[5]
+                            type=data[6]
+                            group_link=data[13]
+                            data_phone=data[10]
+                            input_min.insert(0,min)
+                            input_max.insert(0,max)
+                            input_link.insert("0.0",group_link)
+                            input_max_message.insert(0,maxnumber)
+                            selected_item_auto.set(type)
+                            input_phone.insert("0.0", data_phone)
                         def save_invite_group():
                             try:
                                 id=self.selected_value.get()    
@@ -1215,80 +1269,26 @@ class DashboardScreen(CTk):
                                 type=selected_item_auto.get()
                                 quantity=input_max_message.get()
                                 datalist_phone=input_phone.get("1.0", "end-1c")
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity,datalist_phone)
-                                    VALUES (?, 'Mời tham gia nhóm', ?, ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax, type,quantity,datalist_phone))
+                                link_group=input_link.get("1.0", "end-1c")
+                                if data is not None:
+                                    id_item=data[0]
+                                    cursor.execute('''
+                                        UPDATE action
+                                        SET time_min = ?, time_max = ?, type = ?, quantity=?, datalist_phone = ?,group_link = ?
+                                        WHERE id = ?
+                                    ''', (delaymin, delaymax, type, quantity,datalist_phone,link_group, id_item))
+                                else:
+                                    cursor.execute('''
+                                        INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity,datalist_phone,group_link)
+                                        VALUES (?, 'Mời tham gia nhóm', ?, ?, ?, ?, ?,?)
+                                    ''', (id, delaymin, delaymax, type,quantity,datalist_phone,link_group))
                                 conn.commit()
                                 calldata()
                             except Exception as e:
                                 print("Đã xảy ra lỗi:", e)
                             on_close()  
                         CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_invite_group).pack(side='bottom',anchor='n',pady=(20,20))
-                        invite_group.protocol("WM_DELETE_WINDOW", on_close)
-            def join_group_window():
-                        global join_group
-                        def toggle_window():
-                            if join_group.state() == "normal":
-                                join_group.withdraw()
-                            else:
-                                 join_group.deiconify()
-                        if join_group is not None:
-                            toggle_window()
-                            return
-                        def on_close():
-                            global join_group
-                            join_group.destroy()
-                            join_group = None
-
-                        window_width = 500
-                        join_group = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
-                        join_group.title("Tham gia nhóm")
-                        join_group.resizable(False,False)
-                        join_group.deiconify()
-                        container_frame_max_min = CTkFrame(join_group, fg_color='transparent')
-                        container_frame_max_min.pack(fill='x', padx=10, pady=5, anchor='ne', side='top') 
-                        input_frame_max = CTkFrame(container_frame_max_min, fg_color='transparent')   
-                        input_frame_max.pack(fill='x', side='left')  
-                        text_2 = CTkLabel(input_frame_max, text='Delay min', text_color='black', font=font_text)
-                        text_2.pack(side='top', anchor='w')
-                        input_min = CTkEntry(input_frame_max, placeholder_text='Nhập gian thời Delay min', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
-                        input_min.pack(side='top')
-                        input_frame = CTkFrame(container_frame_max_min, fg_color='transparent')
-                        input_frame.pack(fill='x', padx=10, pady=5, anchor='nw', side='right') 
-                        text_1 = CTkLabel(input_frame, text='Delay max', text_color='black', font=font_text)
-                        text_1.pack(side='top', anchor='w')
-                        input_max = CTkEntry(input_frame, placeholder_text='Nhập thời gian Delay max', text_color='black', font=font_text, fg_color='white',width=window_width/2.3, height=40,border_color='black',border_width=1)
-                        input_max.pack(side='top', anchor='w')
-                        frame = CTkFrame(join_group, fg_color='transparent')
-                        frame.pack(fill='x',pady=5, anchor='ne', side='top')
-                        CTkLabel(frame,text='Số lượng hành động',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
-                        input_max_message = CTkEntry(frame, placeholder_text='Số lượng hành động', text_color='black', font=font_text, fg_color='white',width=window_width, height=40)
-                        input_max_message.pack(side='top',anchor='n',pady=(0,20),padx=10)
-                        CTkLabel(frame,text='Từ khoá nhóm',text_color='black',font=font_text).pack(side='top',anchor='w',pady=5,padx=10)
-                        input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
-                        input_phone.pack(side='top', anchor='w',pady=5,padx=10)
-                        CTkScrollbar(frame,command=input_phone.yview)
-
-                        def save_invite_group():
-                            try:
-                                id=self.selected_value.get()    
-                                delaymin=input_min.get()
-                                delaymax=input_max.get()
-                               
-                                quantity=input_max_message.get()
-                                datalist_phone=input_phone.get("1.0", "end-1c")
-                                cursor.execute('''
-                                    INSERT INTO action (timeline_id, name_action, time_min, time_max, type,quantity,datalist_phone)
-                                    VALUES (?, 'Mời tham gia nhóm', ?, ?, ?, ?, ?)
-                                ''', (id, delaymin, delaymax,quantity,datalist_phone))
-                                conn.commit()
-                                calldata()
-                            except Exception as e:
-                                print("Đã xảy ra lỗi:", e)
-                            on_close()  
-                        CTkButton(frame,fg_color='orange',width=100,text='Lưu',font=font_text,text_color='white',height=45,corner_radius=5, command=save_invite_group).pack(side='bottom',anchor='n',pady=(20,20))
-                        join_group.protocol("WM_DELETE_WINDOW", on_close)                                                                                                 
+                        invite_group.protocol("WM_DELETE_WINDOW", on_close)                                                                                       
             def open_add_action_window():
                     if(self.selected_value.get()):
                         global new_window
@@ -1346,8 +1346,8 @@ class DashboardScreen(CTk):
                         friend_frame = CTkFrame(new_window, width=frame_width, height=frame_height, border_color='black', fg_color='white', border_width=1)
                         CTkLabel(friend_frame,text='Bạn bè',text_color='black',font=("Adobe Kaiti Std R", 17)).pack(pady=10, padx=20,anchor='nw')
                         friend_frame.pack(side='left', anchor='e', pady=10, padx=15, fill='y', expand=True)
-                        img_interact = Image.open('assets/iconapp/friendship.png')
-                        friend_image = CTkImage(light_image=img_interact, size=(frame_height*0.35,frame_height*0.35))
+                        img_interact = Image.open('assets/iconapp/banbe.png')
+                        friend_image = CTkImage(light_image=img_interact, size=(frame_width*0.9,frame_height*0.35))
                         CTkLabel(friend_frame, image=friend_image, text='').pack(pady=10, padx=20)
                         CTkButton(friend_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Gửi kết bạn',command=on_button_click_friend,text_color='black',font=("Adobe Kaiti Std R", 15)).pack(pady=10, padx=20)
                         CTkButton(friend_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,
@@ -1360,18 +1360,15 @@ class DashboardScreen(CTk):
                         def on_button_click_invite_group():
                             invite_group_window()
                             on_close()
-                        def on_button_click_join_group():
-                            join_group_window()
-                            on_close()
                         group_frame = CTkFrame(new_window, width=frame_width, height=frame_height, border_color='black', fg_color='white', border_width=1)
                         group_frame.pack(side='left', anchor='w', pady=10, padx=15, fill='y', expand=True)
                         CTkLabel(group_frame,text='Nhóm',text_color='black',font=("Adobe Kaiti Std R", 17)).pack(pady=10, padx=20,anchor='nw')
-                        img_interact = Image.open('assets/iconapp/group1.png')
-                        friend_image = CTkImage(light_image=img_interact, size=(frame_height*0.35,frame_height*0.35))
+                        img_interact = Image.open('assets/iconapp/nhom.png')
+                        friend_image = CTkImage(light_image=img_interact, size=(frame_width*0.9,frame_height*0.35))
                         CTkLabel(group_frame, image=friend_image, text='').pack(pady=10, padx=20)
                         CTkButton(group_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Nhắn tin',text_color='black',font=("Adobe Kaiti Std R", 15),command=on_button_click_message).pack(pady=10, padx=20)
                         CTkButton(group_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Mời tham gia nhóm',command=on_button_click_invite_group,text_color='black',font=("Adobe Kaiti Std R", 15)).pack(pady=10, padx=20)
-                        CTkButton(group_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Tham gia nhóm',command=on_button_click_join_group,text_color='black',font=("Adobe Kaiti Std R", 15)).pack(pady=10, padx=20)
+
                         new_window.protocol("WM_DELETE_WINDOW", on_close)
                     else:
                         messagebox.showwarning(title='Thông báo',message='Bạn chưa chọn timeline')
@@ -1405,19 +1402,7 @@ class DashboardScreen(CTk):
             frameall.pack(side='top', anchor='w', pady=5,expand=True,fill='both')
             frames=CTkFrame(frameall, fg_color='white')
             frames.pack(side='left', anchor='n' )
-            CTkLabel(frames, text='Cấu hình proxy',text_color='black', font=("Adobe Kaiti Std R", 20)).pack(side='top',anchor='nw',padx=30,pady=20)
-            item_auto=['Không thay proxy','Thay proxy']
-            selected_item_auto = StringVar(value='Không thay proxy')
-            frame=CTkFrame(frames, fg_color='white')
-            frame.pack(side='top', anchor='w')
-            input_max_message=CTkEntry(frames, placeholder_text='Nhập proxy', font=font_text, border_color='black', text_color='black', height=45, width=200)
-            def toggle():
-                if selected_item_auto.get() == 'Thay proxy':
-                    input_max_message.pack( side='top', anchor='w', pady=(15, 0))
-                else:
-                    input_max_message.pack_forget()
-            for item in item_auto:
-                tk.Radiobutton(frame, text=item, background='white', indicatoron=12, font=("Adobe Kaiti Std R", 14), value=item, variable=selected_item_auto, command=toggle).pack(side='left', anchor='w')
+          
             CTkButton(frames, text='Đăng xuất', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='w', pady=(20, 0))
             frameRight=CTkFrame(frameall, fg_color='white')
             frameRight.pack(side='right', padx=50, anchor='w')

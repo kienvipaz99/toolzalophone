@@ -1,13 +1,13 @@
 # import subprocess
 # import cv2
-# def find_image_coordinates(image_path, device, name_image,threshold=0.99):
+# def find_image_coordinates(image_path, device,threshold=0.99):
 #     # Chụp màn hình thiết bị Android và lưu vào file
-#     subprocess.run(['adb', '-s', device.serial, 'shell', 'screencap', f'/sdcard/{name_image}.png'])
+#     subprocess.run(['adb', '-s', device.serial, 'shell', 'screencap', f'/sdcard/{device.serial}.png'])
 #     # Sao chép tệp tin từ thiết bị vào máy tính
-#     subprocess.run(['adb', '-s', device.serial, 'pull', f'/sdcard/{name_image}.png', f'assets/images/{name_image}.png'])
+#     subprocess.run(['adb', '-s', device.serial, 'pull', f'/sdcard/{device.serial}.png', f'assets/images/{device.serial}.png'])
 #     # Xóa tệp tin trên thiết bị sau khi đã sao chép
-#     subprocess.run(['adb', '-s', device.serial, 'shell', 'rm', f'/sdcard/{name_image}.png'])
-#     screenshot = cv2.imread(f'assets/images/{name_image}.png')
+#     subprocess.run(['adb', '-s', device.serial, 'shell', 'rm', f'/sdcard/{device.serial}.png'])
+#     screenshot = cv2.imread(f'assets/images/{device.serial}.png')
 #     template = cv2.imread(image_path)
 #     # Chuyển đổi ảnh và mẫu về định dạng đúng
 #     screenshot_gray = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)

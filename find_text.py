@@ -157,24 +157,31 @@ def post1(device, min_number, max_number, content,file_list):
             sleep(random.randint(min_number, max_number))
             center_x,center_y=findElementByName(device,'CHO PHÉP')
             tap(device,center_x,center_y)
-
-def findmember(device,min_number,max_number,content,file_list):
+def in_ra_text(serial, name):
+    dumpXml(serial)
+    xml_file_path = os.path.join(os.getcwd(), hashlib.md5(serial.encode('utf-8-sig')).hexdigest(), "ui.xml")
+    tree = ET.parse(xml_file_path)
+    for elem in tree.iter(tag="node"):
+        text = elem.attrib.get("text")
+        if text and name in text:
+            # Tìm vị trí của dấu ngoặc đơn đầu tiên và thứ hai trong chuỗi
+            start_index = text.find('(')
+            end_index = text.find(')')
+            if start_index != -1 and end_index != -1:  # Kiểm tra xem có dấu ngoặc đơn không
+                content_inside_brackets = text[start_index + 1:end_index]
+                return content_inside_brackets
+                
+def dumpxmlfindnumber(device):
     dumpXml(device.serial)
-    filename = f"{device.serial}member.txt"
-    filepath = os.path.join(os.getcwd(), filename)
     pattern = re.compile(r"\d+")
     xml_path = os.path.join(os.getcwd(), hashlib.md5(device.serial.encode('utf-8-sig')).hexdigest(), "ui.xml")
     tree = ET.parse(xml_path)
-    if not os.path.exists(filepath):
-        open(filepath, "a").close()
     root = tree.getroot()
     members = root.findall(".//node[@class='android.widget.FrameLayout']")
-    with open(filepath, "r") as file:
-        existing_entries = file.read().splitlines()
     data_member=[]
     for member in members:
         text_value = member.attrib.get("text", "").strip()
-        if text_value and "Trưởng nhóm" not in text_value and "Phó nhóm" not in text_value and "Bạn" not in text_value and "Thành viên" not in text_value and "Gợi ý thêm thành viên" not in text_value and "Duyệt thành viên" not in text_value:
+        if text_value and "Trưởng nhóm" not in text_value and "Phó nhóm" not in text_value and "Bạn" not in text_value and "Thành viên" not in text_value and "Gợi ý thêm thành viên" not in text_value and "Duyệt thành viên" not in text_value and "Trưởng cộng đồng" not in text_value and "Phó cộng đồng" not in text_value:
             bounds = member.attrib["bounds"]
             coord = pattern.findall(bounds)
             Xpoint = int((int(coord[2]) + int(coord[0])) / 2)
@@ -182,17 +189,65 @@ def findmember(device,min_number,max_number,content,file_list):
             new_text = text_value.split("\n", 1)[0]
             coordinates = [new_text, Xpoint, Ypoint]
             data_member.append(coordinates)
+    return  data_member
+def findmember(device,min_number,max_number,content,file_list,number_member,divided):
+    filename = f"{device.serial}member.txt"
+    filepath = os.path.join(os.getcwd(), filename)
+    if not os.path.exists(filepath):
+        open(filepath, "a").close()
+    with open(filepath, "r") as file:
+        existing_entries = file.read().splitlines()
     selected_item = None
-    for item in data_member:
-        if ' '.join(map(str, item[0])) not in existing_entries:
-            selected_item = item
+    data_member = dumpxmlfindnumber(device)
+    if len(data_member) == 0:
+        back(device)
+        back(device)
+        back(device)
+        return False
+    i=0
+    while int(number_member)-1 > i:
+        for item in data_member:
+            if ' '.join(map(str, item[0])) not in existing_entries:
+                selected_item = item
+                break
+        if not selected_item:
+            i += 1
+            swip(device,514,897,535,533)
+            data_member = dumpxmlfindnumber(device)
+            for item in data_member:
+                if ' '.join(map(str, item[0])) not in existing_entries:
+                    selected_item = item
+                    break
+            continue
+        else:
             break
     if selected_item:
         tap(device, selected_item[1], selected_item[2])
+        with open(filepath, "a") as file:
+            file.write(' '.join(map(str, selected_item[0])) + "\n")
+        existing_entries.append(' '.join(map(str, selected_item[0])))
         sleep(random.randint(min_number, max_number))
         x,y=findElementById(device,'com.zing.zalo:id/item_view_profile')
         tap(device,x,y)
         sleep(random.randint(min_number, max_number))
+        if int(divided)==1: 
+            center_x, center_y = findElementById(device, 'com.zing.zalo:id/btn_send_friend_request')
+            x, y = findElementByName(device, 'Hủy kết bạn')
+            if x==0 and y==0:
+                    tap(device, center_x, center_y)
+                    sleep(random.randint(min_number, max_number))
+                    center_x, center_y = findElementById(device, 'com.zing.zalo:id/btnSendInvitation')
+                    tap(device, center_x, center_y)
+                    sleep(random.randint(min_number, max_number))
+                    center_x, center_y = findElementByName(device, 'Đã hiểu')
+                    if (center_x>0 and center_y>0):
+                        tap(device, center_x, center_y)
+                        sleep(random.randint(min_number, max_number))
+                        i =0
+                        while i<3:
+                            i+=1
+                            back(device)
+                            sleep(2)
         center_x, center_y = findElementByName(device, 'Nhắn tin')
         tap(device, center_x, center_y)
         sleep(random.randint(min_number, max_number))
@@ -216,6 +271,7 @@ def findmember(device,min_number,max_number,content,file_list):
             center_x,center_y=findElementById(device,'com.zing.zalo:id/landing_page_layout_send')
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
+        if content:
             center_x,center_y=findElementById(device,'com.zing.zalo:id/chatinput_text')
             tap(device, center_x, center_y)
             sleep(2)
@@ -225,19 +281,22 @@ def findmember(device,min_number,max_number,content,file_list):
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
             back(device)
+            
+        back(device)
 
-        with open(filepath, "a") as file:
-            file.write(' '.join(map(str, selected_item[0])) + "\n")
-        existing_entries.append(' '.join(map(str, selected_item[0])))
+        
+        return True
+
     else:
-        swip(device,514,897,535,533)
-        # Kiểm tra lại nếu vẫn không tìm thấy phần tử mới, thì dừng lại
         for item in data_member:
             if ' '.join(map(str, item[0])) not in existing_entries:
                 selected_item = item
                 break
-        if not selected_item:
-            return 'oke'
+            if not selected_item:
+                    back(device)
+                    back(device)
+                    back(device)
+                    return False
 
             
             
