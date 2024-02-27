@@ -117,16 +117,16 @@ class DashboardScreen(CTk):
             print(f'Hành động không xác định: {action_name}')
 
     def process_device(self,device,account_info,data):
-        # if not check_key_board(device.serial, "com.android.adbkeyboard"):
-        #     subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
-        #     sleep(10)
-        # ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
-        # os.system(ime_command)
-        # if(self.checkLogin.get()==1):
-        #     login(device,account_info)
-        # else:
-        #     kill_and_restart_app('com.zing.zalo')
-        # time.sleep(3)
+        if not check_key_board(device.serial, "com.android.adbkeyboard"):
+            subprocess.call(['adb', '-s', device.serial, 'install', 'ADBKeyboard.apk'])
+            sleep(10)
+        ime_command = f"adb -s {device.serial} shell ime set com.android.adbkeyboard/.AdbIME"
+        os.system(ime_command)
+        if(self.checkLogin.get()==1):
+            login(device,account_info)
+        else:
+            kill_and_restart_app('com.zing.zalo')
+        time.sleep(3)
         for item in data:
             action_name = item[2]
             
@@ -245,7 +245,8 @@ class DashboardScreen(CTk):
             info_frame = CTkFrame(self.main_view_frame,fg_color='white')
             info_frame.pack(side='left', anchor='nw', pady=20, padx=20)
             CTkLabel(info_frame, text='Thông tin tài khoản', font=("Adobe Kaiti Std R", 20),text_color="black").pack(side='top')
-      
+            # horizontal_line = ttk.Separator(root, orient='horizontal',b)
+            # horizontal_line.pack(fill='x', padx=10, pady=10)
             treeFrame = CTkFrame(info_frame,fg_color='#dbdbdb')
             treeFrame.pack(pady=40, padx=10, side='bottom')  
             cols = ("#",'Chọn',"Tài khoản",  "Trạng thái","Proxy")
@@ -318,7 +319,6 @@ class DashboardScreen(CTk):
             btn_them_file.pack(anchor='c',pady=(20,0))
             btn_xoa = CTkButton(fame1, corner_radius=10, fg_color='#114AA0', height=40, width=100, text='Xóa', font=("Adobe Kaiti Std R", 15), text_color='white',hover=False,command=delete_account)
             btn_xoa.pack(anchor='c',pady=(20,0))
-
             load_data()
         elif loai_man_hinh == "Hành động":
             def fetch_data():
@@ -407,8 +407,8 @@ class DashboardScreen(CTk):
                 if(data):
                     for row_index, row_data in enumerate(data, start=1):
                         stt = row_index
-                        CTkLabel(my_frame,text=stt,width=50).grid(row=row_index,column=0,sticky="n",pady=5)
-                        CTkLabel(my_frame,text=row_data[2],width=150).grid(row=row_index, column=1,sticky="n",pady=5)
+                        CTkLabel(my_frame,text=stt,width=50,text_color='black',font=font_text).grid(row=row_index,column=0,sticky="n",pady=5)
+                        CTkLabel(my_frame,text=row_data[2],width=150,text_color='black',font=font_text).grid(row=row_index, column=1,sticky="n",pady=5)
                         CTkButton(my_frame,text='Sửa', command=lambda row=row_data: edit_action(row),fg_color='#114AA0',width=150,image=img_pen).grid(row=row_index, column=2, sticky="n",pady=5,)
                         CTkButton(my_frame ,image=img_bin,text='Xoá',fg_color='#114AA0',width=150, command=lambda id=row_data[0]: delete_action(id)).grid(row=row_index, column=3, sticky="n",pady=5)
 
@@ -1399,15 +1399,9 @@ class DashboardScreen(CTk):
                     treeview.insert("", "end", values=(1, device_properties.get('ro.product.model', 'Unknown Device'),device.serial,get_device_imei(device), device.get_state()))
         elif loai_man_hinh=='Cài đặt':
             frameall=CTkFrame(self.main_view_frame,fg_color='white')
-            frameall.pack(side='top', anchor='w', pady=5,expand=True,fill='both')
-            frames=CTkFrame(frameall, fg_color='white')
-            frames.pack(side='left', anchor='n' )
-          
-            CTkButton(frames, text='Đăng xuất', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='w', pady=(20, 0))
-            frameRight=CTkFrame(frameall, fg_color='white')
-            frameRight.pack(side='right', padx=50, anchor='w')
-            CTkLabel(frameRight, text='Hạn sử dụng (315 ngày)', text_color='black', font=("Adobe Kaiti Std R", 18)).pack(side='top', padx=30, anchor="nw")
-            CTkButton(frameRight, text='Gia hạn', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='n', pady=(20, 0))
+            frameall.pack(side='top', anchor='w', pady=5,padx=30,)
+            CTkButton(frameall, text='Đăng xuất', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='n', padx=30)
+            CTkLabel(frameall, text='Hạn sử dụng (315 ngày)', text_color='black', font=("Adobe Kaiti Std R", 18)).pack(side='top', padx=30, anchor="n",pady=20)
 if __name__ == "__main__":
     root = CTk()
     dashboard_screen = DashboardScreen(root)

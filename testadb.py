@@ -141,30 +141,26 @@ def swip_newfeed(device,min_number,max_number,number_action):
                 sleep(4)
             else:
                 swip(device, 516, 1676, 536, 569)
-def post1(device, min_number, max_number, content,file_list):
-        for file_path in file_list:
+def post1(device, min_number, max_number, content, file_list):
+    for file_path in file_list:
             current_timestamp = time.mktime(datetime.now().timetuple())
-
             os.utime(file_path, (current_timestamp, current_timestamp))
-
             file_name = os.path.basename(file_path)
             destination_path = f'/sdcard/DCIM/{file_name}'
-
             # Đẩy file lên thiết bị
             subprocess.run(['adb', '-s', device.serial, 'push', file_path, destination_path], capture_output=True)
-
             # Kích hoạt trình quét media
             subprocess.run(['adb', '-s', device.serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', f'file://{destination_path}'], capture_output=True)
-        
-        center_x,center_y=findElementByName(device,'CHO PHÉP TRUY CẬP')
-        if center_x >0 and center_y >0:
-            tap(device,center_x,center_y)
-            sleep(random.randint(min_number, max_number))
-            center_x,center_y=findElementByName(device,'CHO PHÉP')
-            tap(device,center_x,center_y)
-        center_x,center_y=findElementById(device,'com.zing.zalo:id/media_picker_layout')
-        tap(device,center_x,center_y)
-        sleep(5)
+    center_x, center_y = findElementByName(device, 'CHO PHÉP TRUY CẬP')
+    if center_x > 0 and center_y > 0:
+        tap(device, center_x, center_y)
+        sleep(random.randint(min_number, max_number))
+        center_x, center_y = findElementByName(device, 'CHO PHÉP')
+        tap(device, center_x, center_y)
+    center_x, center_y = findElementById(device, 'com.zing.zalo:id/media_picker_layout')
+    tap(device, center_x, center_y)
+    sleep(5)
+
 def post2(device, min_number, max_number,file_list):
         for file_path in file_list:
             # Lấy thời gian hiện tại dưới dạng timestamp
@@ -604,8 +600,8 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                     if ia == int(number_action):
                         break
                 if ia == int(number_action):
-                        break               
-            os.remove(f"{device.serial}member.txt")
+                    os.remove(f"{device.serial}member.txt")
+                    break               
 def comment_post(device,min_number,max_number,number_action,content,love):
     center_x, center_y = find_image_coordinates('assets/images/newfeed.png', device)
     tap(device, center_x, center_y)
@@ -724,10 +720,9 @@ def login(device,account_info):
     openapp(device)
     sleep(random.randint(20,30))
     center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
-    if(center_x==0 and center_y==0):
+    if(center_x>0 and center_y>0):
         # delete_cache(device,"com.zing.zalo")
         # sleep(random.randint(5,10))
-        center_x,center_y=findElementById(device,'com.zing.zalo:id/btnLogin')
         tap(device,center_x,center_y)
         sleep(random.randint(3,5))
         center_x,center_y=findElementByName(device,'CHO PHÉP')
