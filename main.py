@@ -309,7 +309,6 @@ class DashboardScreen(CTk):
                         conn_account.commit()
                         
                     load_data()
-                    
                 except Exception as e:
                     tkinter.messagebox.showerror("Lỗi", "Lưu ý tải file tài khoản lên tài khoản ngăn cách với mật khẩu bằng dấu | ví dụ(tk|mk) và mỗi nick xuống dòng 1 lần")
 
@@ -1111,7 +1110,6 @@ class DashboardScreen(CTk):
                             unfriend_window = None
                         window_width = 500
                         window_height = 300
-                     
                         unfriend_window = CTkToplevel(self.main_view_frame,fg_color='#f0f0f0')
                         unfriend_window.title("Thu hồi kết bạn")
                         unfriend_window.resizable(False,False)
@@ -1239,7 +1237,6 @@ class DashboardScreen(CTk):
                         frame_checkbox.pack(side='top', anchor='w',pady=5,fill='y', expand=True)
                         input_phone =CTkTextbox(frame , fg_color='white',text_color='black', width=window_width, height=100,border_color='black',border_width=1)
                         CTkScrollbar(frame,command=input_phone.yview)
-
                         def toggle_input_max():
                             if selected_item_auto.get() == 'Danh sách sđt':
                                     input_phone.pack(side='top', anchor='w',pady=5,padx=10)
@@ -1368,7 +1365,6 @@ class DashboardScreen(CTk):
                         CTkLabel(group_frame, image=friend_image, text='').pack(pady=10, padx=20)
                         CTkButton(group_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Nhắn tin',text_color='black',font=("Adobe Kaiti Std R", 15),command=on_button_click_message).pack(pady=10, padx=20)
                         CTkButton(group_frame,fg_color='white',hover=False,border_color='black',border_width=1,width=frame_width*0.9,height=frame_height*0.1,text='Mời tham gia nhóm',command=on_button_click_invite_group,text_color='black',font=("Adobe Kaiti Std R", 15)).pack(pady=10, padx=20)
-
                         new_window.protocol("WM_DELETE_WINDOW", on_close)
                     else:
                         messagebox.showwarning(title='Thông báo',message='Bạn chưa chọn timeline')
@@ -1399,9 +1395,10 @@ class DashboardScreen(CTk):
                     treeview.insert("", "end", values=(1, device_properties.get('ro.product.model', 'Unknown Device'),device.serial,get_device_imei(device), device.get_state()))
         elif loai_man_hinh=='Cài đặt':
             frameall=CTkFrame(self.main_view_frame,fg_color='white')
-            frameall.pack(side='top', anchor='w', pady=5,padx=30,)
-            CTkButton(frameall, text='Đăng xuất', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='n', padx=30)
-            CTkLabel(frameall, text='Hạn sử dụng (315 ngày)', text_color='black', font=("Adobe Kaiti Std R", 18)).pack(side='top', padx=30, anchor="n",pady=20)
+            frameall.pack(side='top', anchor='w', pady=5,expand=True,fill='both',padx=30,)
+            CTkButton(frameall, text='Đăng xuất', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='w', padx=30)
+            CTkLabel(frameall, text='Hạn sử dụng (315 ngày)', text_color='black', font=("Adobe Kaiti Std R", 18)).pack(side='top', padx=30, anchor="w")
+            # CTkButton(frameall, text='Gia hạn', font=font_text, height=45, width=100, fg_color='#F27C0F', text_color='white').pack(side='bottom', anchor='w', padx=30)
 if __name__ == "__main__":
     root = CTk()
     dashboard_screen = DashboardScreen(root)

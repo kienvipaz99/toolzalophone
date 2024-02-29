@@ -583,7 +583,7 @@ def sent_messages(device,min_number,max_number,content,number_action,file,type,d
                         if center_x>0 and  center_y>0:
                             back(device)
                             break
-                    center_x,center_y=findElementById(device,'com.zing.zalo:id/menu_drawer')
+                    center_x, center_y = find_image_coordinates('assets/images/menu.png', device)
                     tap(device, center_x, center_y)
                     sleep(random.randint(min_number, max_number))
                     while True:
@@ -707,12 +707,34 @@ def invite_join_group(device,min_number,max_number,number_action,type,group_link
                 sleep(random.randint(min_number, max_number))
                 input_text(device,text=number)
                 sleep(random.randint(min_number, max_number))
+                
+                center_x,center_y=findElementByName(device,'Đã tham gia')
+                if center_x >0 and center_y >0:
+                    center_x,center_y = find_image_coordinates('assets/images/clear.png', device)
+                    tap(device,center_x,center_y)
+                    sleep(random.randint(min_number, max_number))
+                    continue
+                center_x,center_y=findElementByName(device,'Không tìm thấy kết quả phù hợp.')
+                if center_x >0 and center_y >0:
+                    center_x,center_y = find_image_coordinates('assets/images/clear.png', device)
+                    tap(device,center_x,center_y)
+                    sleep(random.randint(min_number, max_number))
+                    continue
+                
                 center_x,center_y=findElementById(device,'com.zing.zalo:id/name')
                 tap(device, center_x, center_y)
                 sleep(random.randint(min_number, max_number))
             center_x,center_y=findElementById(device,'com.zing.zalo:id/btn_done_invite_to_group')
             tap(device, center_x, center_y)
             sleep(random.randint(min_number, max_number))
+            if center_x ==0 and center_y ==0:
+                back(device)
+                sleep(1)
+                back(device)
+                sleep(1)
+                back(device)
+                sleep(1)
+                
     back(device)
     sleep(random.randint(min_number, max_number))
          
